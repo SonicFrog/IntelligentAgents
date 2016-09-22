@@ -59,19 +59,19 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     }
 
     public void setWorldXSize(int x) {
-        dimX = x;
+        worldXSize = x;
     }
 
     public int getWorldXSize() {
-        return dimX;
+        return worldXSize;
     }
 
     public void setWorldYSize(int y) {
-        dimY = y;
+        worldYSize = y;
     }
 
     public int getWorldYSize() {
-        return dimY;
+        return worldYSize;
     }
 
     public void setNumAgents(int a) {
