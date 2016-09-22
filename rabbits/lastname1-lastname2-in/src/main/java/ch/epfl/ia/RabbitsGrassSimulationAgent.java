@@ -1,3 +1,5 @@
+package ch.epfl.ia;
+
 import uchicago.src.sim.gui.Drawable;
 import uchicago.src.sim.gui.SimGraphics;
 

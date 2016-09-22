@@ -1,3 +1,6 @@
+package ch.epfl.ia;
+
+import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimModelImpl;
 
@@ -7,45 +10,43 @@ import uchicago.src.sim.engine.SimModelImpl;
  * order to run Repast simulation. It manages the entire RePast
  * environment and the simulation.
  *
- * @author
+ * @author Ogier
  */
-
-
 public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     private Schedule schedule;
     private int numAgents;
 
+    private int dimX, dimY;
+
     public static void main(String[] args) {
-
-        System.out.println("Rabbit skeleton");
-
+        SimInit init = new SimInit();
+        RabbitsGrassSimulationModel model = new RabbitsGrassSimulationModel();
+        init.loadModel(model, "", false);
     }
 
     public void begin() {
-        // TODO Auto-generated method stub
-
+        // TODO: stub
     }
 
     public void setup() {
-        // TODO Auto-generated method stub
-
+        // TODO: stub
     }
 
     public void buildModel() {
-
+        // TODO: stub
     }
 
     public void buildSchedule() {
-
+        // TODO: stub
     }
 
     public void buildDisplay() {
-
+        // TODO: stub
     }
 
     public String[] getInitParam() {
-        String[] params = { "NumAgents", "AgentStrength" };
+        String[] params = { "NumAgents", "DimX", "DimY" };
         return null;
     }
 
@@ -55,6 +56,22 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     public Schedule getSchedule() {
         return schedule;
+    }
+
+    public void setDimX(int x) {
+        dimX = x;
+    }
+
+    public int getDimX() {
+        return dimX;
+    }
+
+    public void setDimY(int y) {
+        dimY = y;
+    }
+
+    public int getDimY() {
+        return dimY;
     }
 
     public void setNumAgents(int a) {
