@@ -47,7 +47,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     public String[] getInitParam() {
         String[] params = { "NumAgents", "WorldXSize", "WorldYsize" };
-        return null;
+        return params;
     }
 
     public String getName() {
