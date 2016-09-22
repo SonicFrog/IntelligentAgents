@@ -7,40 +7,61 @@ import uchicago.src.sim.engine.SimModelImpl;
  * order to run Repast simulation. It manages the entire RePast
  * environment and the simulation.
  *
- * @author 
+ * @author
  */
 
 
-public class RabbitsGrassSimulationModel extends SimModelImpl {		
+public class RabbitsGrassSimulationModel extends SimModelImpl {
 
-		public static void main(String[] args) {
-			
-			System.out.println("Rabbit skeleton");
-			
-		}
+    private Schedule schedule;
+    private int numAgents;
 
-		public void begin() {
-			// TODO Auto-generated method stub
-			
-		}
+    public static void main(String[] args) {
 
-		public String[] getInitParam() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+        System.out.println("Rabbit skeleton");
 
-		public String getName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+    }
 
-		public Schedule getSchedule() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+    public void begin() {
+        // TODO Auto-generated method stub
 
-		public void setup() {
-			// TODO Auto-generated method stub
-			
-		}
+    }
+
+    public void setup() {
+        // TODO Auto-generated method stub
+
+    }
+
+    public void buildModel() {
+
+    }
+
+    public void buildSchedule() {
+
+    }
+
+    public void buildDisplay() {
+
+    }
+
+    public String[] getInitParam() {
+        String[] params = { "NumAgents", "AgentStrength" };
+        return null;
+    }
+
+    public String getName() {
+        return "Rabbits simulation model";
+    }
+
+    public Schedule getSchedule() {
+        return schedule;
+    }
+
+    public void setNumAgents(int a) {
+        this.numAgents = a;
+    }
+
+    public int getNumAgents() {
+        return numAgents;
+    }
 }
