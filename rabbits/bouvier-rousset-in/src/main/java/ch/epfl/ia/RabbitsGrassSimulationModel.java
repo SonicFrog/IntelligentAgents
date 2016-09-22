@@ -15,9 +15,15 @@ import uchicago.src.sim.engine.SimModelImpl;
 public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     private Schedule schedule;
-    private int numAgents;
 
-    private int worldXSize, worldYSize;
+    private static final int NUMAGENTS = 100;
+    private static final int WORLDXSIZE = 40;
+    private static final int WORLDYSIZE = 40;
+
+    private int numAgents = NUMAGENTS;
+
+    private int worldXSize = WORLDXSIZE, worldYSize = WORLDYSIZE;
+
 
     public static void main(String[] args) {
         SimInit init = new SimInit();
@@ -26,23 +32,23 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     }
 
     public void begin() {
-        // TODO: stub
+        System.out.println("Running begin");
     }
 
     public void setup() {
-        // TODO: stub
+        System.out.println("Running setup");
     }
 
     public void buildModel() {
-        // TODO: stub
+        System.out.println("Running buildModel");
     }
 
     public void buildSchedule() {
-        // TODO: stub
+        System.out.println("Running buildSchedule");
     }
 
     public void buildDisplay() {
-        // TODO: stub
+        System.out.println("Running buildDisplay");
     }
 
     public String[] getInitParam() {
