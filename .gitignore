@@ -3,8 +3,7 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
-*.jar
+# Package Files
 *.war
 *.ear
 
@@ -13,3 +12,6 @@ hs_err_pid*
 
 # Mac OS
 .DS_Store
+
+# Gradle
+.gradle
