@@ -10,7 +10,7 @@ import uchicago.src.sim.engine.SimModelImpl;
  * order to run Repast simulation. It manages the entire RePast
  * environment and the simulation.
  *
- * @author Ogier
+ * @author Ogier & Valérian
  */
 public class RabbitsGrassSimulationModel extends SimModelImpl {
 
@@ -24,6 +24,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     private int worldXSize = WORLDXSIZE, worldYSize = WORLDYSIZE;
 
+    private RabbitsGrassSimulationSpace space;
 
     public static void main(String[] args) {
         SimInit init = new SimInit();
@@ -31,16 +32,20 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         init.loadModel(model, "", false);
     }
 
-    public void begin() {
-        System.out.println("Running begin");
-    }
-
     public void setup() {
         System.out.println("Running setup");
+        space = null;
+    }
+
+    public void begin() {
+        buildModel();
+        buildSchedule();
+        buildDisplay();
     }
 
     public void buildModel() {
         System.out.println("Running buildModel");
+        space = new RabbitsGrassSimulationSpace(worldXSize, worldYSize);
     }
 
     public void buildSchedule() {
