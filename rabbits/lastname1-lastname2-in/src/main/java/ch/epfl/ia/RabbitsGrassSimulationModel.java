@@ -17,7 +17,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private Schedule schedule;
     private int numAgents;
 
-    private int dimX, dimY;
+    private int worldXSize, worldYSize;
 
     public static void main(String[] args) {
         SimInit init = new SimInit();
@@ -46,7 +46,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     }
 
     public String[] getInitParam() {
-        String[] params = { "NumAgents", "DimX", "DimY" };
+        String[] params = { "NumAgents", "WorldXSize", "WorldYsize" };
         return null;
     }
 
@@ -58,19 +58,19 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         return schedule;
     }
 
-    public void setDimX(int x) {
+    public void setWorldXSize(int x) {
         dimX = x;
     }
 
-    public int getDimX() {
+    public int getWorldXSize() {
         return dimX;
     }
 
-    public void setDimY(int y) {
+    public void setWorldYSize(int y) {
         dimY = y;
     }
 
-    public int getDimY() {
+    public int getWorldYSize() {
         return dimY;
     }
 
