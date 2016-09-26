@@ -43,4 +43,8 @@ public class RabbitsGrassSimulationSpace {
 
         return i;
     }
+
+    public Object2DGrid getCurrentSpace() {
+        return space;
+    }
 }
