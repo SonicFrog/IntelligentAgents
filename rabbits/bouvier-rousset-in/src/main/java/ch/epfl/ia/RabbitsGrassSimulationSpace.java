@@ -52,6 +52,10 @@ public class RabbitsGrassSimulationSpace {
         return moneySpace;
     }
 
+    public Object2DGrid getCurrentAgentSpace() {
+        return agentSpace;
+    }
+
     public boolean isCellOccupied(int x, int y) {
         return agentSpace.getObjectAt(x, y) != null;
     }

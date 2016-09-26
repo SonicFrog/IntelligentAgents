@@ -1,8 +1,9 @@
 package ch.epfl.ia;
 
+import java.awt.Color;
+
 import uchicago.src.sim.gui.Drawable;
 import uchicago.src.sim.gui.SimGraphics;
-import java.awt.Dimension;
 
 
 /**
@@ -55,7 +56,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     }
 
     public void draw(SimGraphics arg0) {
-
+        arg0.drawFastRoundRect(Color.blue);
     }
 
     public Position getPosition() {

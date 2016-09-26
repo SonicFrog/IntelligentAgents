@@ -3,6 +3,7 @@ package ch.epfl.ia;
 import java.awt.Color;
 import java.util.ArrayList;
 import ch.epfl.ia.RabbitsGrassSimulationAgent;
+import uchicago.src.sim.gui.Object2DDisplay;
 
 import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.engine.Schedule;
@@ -105,7 +106,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         Value2DDisplay displayMoney =
             new Value2DDisplay(space.getCurrentMoneySpace(), map);
 
+        Object2DDisplay agentDisplay = new Object2DDisplay(space.getCurrentAgentSpace());
+        agentDisplay.setObjectList(agents);
+
         surface.addDisplayable(displayMoney, "Money display");
+        surface.addDisplayable(agentDisplay, "Agent display");
     }
 
     private void addNewAgent() {
