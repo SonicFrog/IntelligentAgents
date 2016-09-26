@@ -32,7 +32,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private static final int AGENT_MIN_LIFESPAN = 30;
     private static final int AGENT_MAX_LIFESPAN = 50;
 
-
     private int numAgents = NUMAGENTS;
     private int worldXSize = WORLDXSIZE;
     private int worldYSize = WORLDYSIZE;
@@ -82,6 +81,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
         for (int i = 0; i < numAgents; i++) {
             addNewAgent();
+        }
+
+        for (RabbitsGrassSimulationAgent a : agents) {
+            a.report();
         }
     }
 

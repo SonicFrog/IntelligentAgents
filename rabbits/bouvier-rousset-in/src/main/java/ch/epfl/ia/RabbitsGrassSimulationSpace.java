@@ -68,7 +68,7 @@ public class RabbitsGrassSimulationSpace {
 
             if (res) {
                 agentSpace.putObjectAt(x, y, agent);
-                agent.setPosition(new Dimension(x, y));
+                agent.setPosition(new Position(x, y));
             }
 
             count++;

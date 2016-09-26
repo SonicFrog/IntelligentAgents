@@ -8,42 +8,65 @@ import java.awt.Dimension;
 /**
  * Class that implements the simulation agent for the rabbits grass simulation.
 
- * @author
+ * @author Ogier & Valérian
  */
 
 public class RabbitsGrassSimulationAgent implements Drawable {
 
-    private int x;
-    private int y;
+    private static int nextID = 0;
+
+    private int ID;
 
     private int money;
 
     private int stepsToLive;
 
-    private Dimension position;
+    private Position position;
 
     public RabbitsGrassSimulationAgent(int minLifespan, int maxLifespan) {
-        x = -1;
-        y = -1;
+        position = new Position(-1, -1);
         money = 0;
         stepsToLive = (int) ((Math.random() * (maxLifespan - minLifespan))
                              + minLifespan);
+        ID = nextID++;
     }
 
-    public void setPosition(Dimension pos) {
+    public void setPosition(Position pos) {
         position = pos;
+    }
+
+    public String getID() {
+        return "A-" + ID;
+    }
+
+    public int getMoney() {
+        return money;
+    }
+
+    public int getSTL() {
+        return stepsToLive;
+    }
+
+    public void report() {
+        System.out.println(getID() + " at " + position.x + ", " + position.y
+                           + " has " + getMoney() + " dollars and " + getSTL() +
+                           " steps to live");
+
     }
 
     public void draw(SimGraphics arg0) {
 
     }
 
+    public Position getPosition() {
+        return position;
+    }
+
     public int getX() {
-        return 0;
+        return position.x();
     }
 
     public int getY() {
-        return 0;
+        return position.y();
     }
-
 }
