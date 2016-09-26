@@ -1,6 +1,8 @@
 package ch.epfl.ia;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import ch.epfl.ia.RabbitsGrassSimulationAgent;
 
 import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.engine.Schedule;
@@ -42,6 +44,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     private DisplaySurface surface;
 
+    private ArrayList<RabbitsGrassSimulationAgent> agents;
+
+
     public static void main(String[] args) {
         SimInit init = new SimInit();
         RabbitsGrassSimulationModel model = new RabbitsGrassSimulationModel();
@@ -51,6 +56,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     public void setup() {
         System.out.println("Running setup");
         space = null;
+
+        agents = new ArrayList<>();
 
         if (surface != null) {
             surface.dispose();
@@ -72,6 +79,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         System.out.println("Running buildModel");
         space = new RabbitsGrassSimulationSpace(worldXSize, worldYSize);
         space.spreadMoney(TOTAL_MONEY);
+
+        for (int i = 0; i < numAgents; i++) {
+            addNewAgent();
+        }
     }
 
     public void buildSchedule() {
@@ -89,9 +100,16 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         map.mapColor(0, Color.WHITE);
 
         Value2DDisplay displayMoney =
-            new Value2DDisplay(space.getCurrentSpace(), map);
+            new Value2DDisplay(space.getCurrentMoneySpace(), map);
 
         surface.addDisplayable(displayMoney, "Money display");
+    }
+
+    private void addNewAgent() {
+        RabbitsGrassSimulationAgent a =
+            new RabbitsGrassSimulationAgent(agentMinLifespan, agentMaxLifespan);
+        agents.add(a);
+        space.addAgent(a);
     }
 
     public String[] getInitParam() {
