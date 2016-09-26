@@ -19,4 +19,28 @@ public class RabbitsGrassSimulationSpace {
             }
         }
     }
+
+    public void spreadMoney(int total) {
+        for (int i = 0; i < total; i++) {
+            int x = (int) (Math.random() * space.getSizeX());
+            int y = (int) (Math.random() * space.getSizeY());
+
+            int currentValue = getMoneyAt(x, y);
+            space.putObjectAt(x, y, new Integer(currentValue + 1));
+        }
+    }
+
+    public int getMoneyAt(int x, int y) {
+        int i;
+
+        Integer current = (Integer) space.getObjectAt(x, y);
+
+        if (current == null) {
+            i = 0;
+        } else {
+            i = current.intValue();
+        }
+
+        return i;
+    }
 }
