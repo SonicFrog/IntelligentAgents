@@ -32,6 +32,10 @@ public class RabbitsGrassSimulationAgent implements Drawable {
         ID = nextID++;
     }
 
+    public void step() {
+        stepsToLive--;
+    }
+
     public void setPosition(Position pos) {
         position = pos;
     }

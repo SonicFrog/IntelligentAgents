@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import ch.epfl.ia.RabbitsGrassSimulationAgent;
 import uchicago.src.sim.gui.Object2DDisplay;
+import uchicago.src.sim.util.SimUtilities;
 
+import uchicago.src.sim.engine.BasicAction;
 import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimModelImpl;
@@ -57,6 +59,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         System.out.println("Running setup");
         space = null;
 
+        schedule = new Schedule(1);
+
         agents = new ArrayList<>();
 
         if (surface != null) {
@@ -91,6 +95,18 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     public void buildSchedule() {
         System.out.println("Running buildSchedule");
+
+        class RabbitsGrassSimulationStep extends BasicAction {
+            @Override
+            public void execute() {
+                SimUtilities.shuffle(agents);
+                for (RabbitsGrassSimulationAgent a : agents) {
+                    a.step();
+                }
+            }
+        }
+
+        schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
     }
 
     public void buildDisplay() {
