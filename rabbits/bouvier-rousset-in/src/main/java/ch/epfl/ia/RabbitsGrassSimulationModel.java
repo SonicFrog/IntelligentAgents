@@ -1,8 +1,11 @@
 package ch.epfl.ia;
 
 import java.awt.Color;
+import java.util.List;
 import java.util.ArrayList;
-import ch.epfl.ia.RabbitsGrassSimulationAgent;
+import java.util.stream.Collectors;
+
+
 import uchicago.src.sim.gui.Object2DDisplay;
 import uchicago.src.sim.util.SimUtilities;
 
@@ -25,7 +28,6 @@ import uchicago.src.sim.gui.DisplaySurface;
  * @author Ogier & Valérian
  */
 public class RabbitsGrassSimulationModel extends SimModelImpl {
-
     private Schedule schedule;
 
     private static final int NUMAGENTS = 100;
@@ -46,7 +48,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     private DisplaySurface surface;
 
-    private ArrayList<RabbitsGrassSimulationAgent> agents;
+    private List<RabbitsGrassSimulationAgent> agents;
 
 
     public static void main(String[] args) {
@@ -55,6 +57,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         init.loadModel(model, "", false);
     }
 
+    /**
+     * Sets up all required components of simulation
+     **/
+    @Override
     public void setup() {
         System.out.println("Running setup");
         space = null;
@@ -71,6 +77,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         this.registerDisplaySurface("Carry drop model window1", surface);
     }
 
+    @Override
     public void begin() {
         buildModel();
         buildSchedule();
@@ -79,6 +86,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         surface.display();
     }
 
+    /**
+     * Builds the model and initializes the simulation space
+     **/
     public void buildModel() {
         System.out.println("Running buildModel");
         space = new RabbitsGrassSimulationSpace(worldXSize, worldYSize);
@@ -93,6 +103,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         }
     }
 
+    /**
+     * Builds the simulation schedule during setup
+     **/
     public void buildSchedule() {
         System.out.println("Running buildSchedule");
 
@@ -106,9 +119,20 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             }
         }
 
+        class RabbitsGrassSimulationCountLiving extends BasicAction {
+            @Override
+            public void execute() {
+                System.out.println("There are " + countLivingAgents() + " living agents!");
+            }
+        }
+
         schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
+        schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationCountLiving());
     }
 
+    /**
+     * Creates the display components of the simulation
+     **/
     public void buildDisplay() {
         System.out.println("Running buildDisplay");
 
@@ -129,6 +153,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         surface.addDisplayable(agentDisplay, "Agent display");
     }
 
+    /**
+     * Generates a new random agent and adds to the simulation space
+     **/
     private void addNewAgent() {
         RabbitsGrassSimulationAgent a =
             new RabbitsGrassSimulationAgent(agentMinLifespan, agentMaxLifespan);
@@ -136,16 +163,24 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         space.addAgent(a);
     }
 
+    public int countLivingAgents() {
+        // Java lambdas yay!
+        return (int) agents.stream().filter(a -> a.getSTL() > 0).count();
+    }
+
+    @Override
     public String[] getInitParam() {
         String[] params = { "NumAgents", "WorldXSize", "WorldYsize",
                             "AgentMinLifespan", "AgentMaxLifespan" };
         return params;
     }
 
+    @Override
     public String getName() {
         return "Rabbits simulation model";
     }
 
+    @Override
     public Schedule getSchedule() {
         return schedule;
     }
