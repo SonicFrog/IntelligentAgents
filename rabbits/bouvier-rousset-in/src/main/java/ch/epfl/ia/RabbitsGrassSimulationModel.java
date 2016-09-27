@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
-
+import java.util.stream.Stream;
 
 import uchicago.src.sim.gui.Object2DDisplay;
 import uchicago.src.sim.util.SimUtilities;
@@ -116,6 +116,16 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
                 for (RabbitsGrassSimulationAgent a : agents) {
                     a.step();
                 }
+
+                int deadRabbitsCount = eatDeadStreamRabbits();
+
+                System.out.println("Found " + deadRabbitsCount + " dead rabbits!");
+
+                for (int i = 0; i < deadRabbitsCount; i++ ) {
+                    addNewAgent();
+                }
+
+                surface.updateDisplay();
             }
         }
 
@@ -165,7 +175,21 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     public int countLivingAgents() {
         // Java lambdas yay!
-        return (int) agents.stream().filter(a -> a.getSTL() > 0).count();
+        return (int) agents.stream().filter(a -> !a.isDead()).count();
+    }
+
+    /**
+     * Use this if you're hungry
+     **/
+    private int eatDeadStreamRabbits() {
+        List<RabbitsGrassSimulationAgent> dead = agents.stream()
+            .filter(a -> a.isDead()).collect(Collectors.toList());
+
+        dead.stream().forEach(a ->
+                              agents.remove(a));
+
+        return (int) dead.stream().count();
+
     }
 
     @Override

@@ -48,6 +48,10 @@ public class RabbitsGrassSimulationSpace {
         return i;
     }
 
+    public void removeAgentAt(int x, int y) {
+        agentSpace.putObjectAt(x, y, null);
+    }
+
     public Object2DGrid getCurrentMoneySpace() {
         return moneySpace;
     }

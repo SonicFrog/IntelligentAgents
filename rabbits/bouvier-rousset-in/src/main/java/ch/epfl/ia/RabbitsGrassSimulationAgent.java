@@ -32,6 +32,10 @@ public class RabbitsGrassSimulationAgent implements Drawable {
         ID = nextID++;
     }
 
+    public boolean isDead() {
+        return stepsToLive < 1;
+    }
+
     public void step() {
         stepsToLive--;
     }
@@ -60,7 +64,12 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     }
 
     public void draw(SimGraphics arg0) {
-        arg0.drawFastRoundRect(Color.blue);
+        if (stepsToLive > 10)
+            arg0.drawFastRoundRect(Color.green);
+        else if (stepsToLive == 0)
+            arg0.drawFastRoundRect(Color.black);
+        else
+            arg0.drawFastRoundRect(Color.blue);
     }
 
     public Position getPosition() {
