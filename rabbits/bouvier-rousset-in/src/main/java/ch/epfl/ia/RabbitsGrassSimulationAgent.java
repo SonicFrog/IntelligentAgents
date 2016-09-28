@@ -77,14 +77,13 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     public void step() {
         Object2DGrid grid = space.getCurrentAgentSpace();
 
-        int newX = (position.x() + vX + grid.getSizeX()) % grid.getSizeX();
-        int newY = (position.y() + vY + grid.getSizeY()) % grid.getSizeY();
+        int newX = Math.floorMod(position.x + vX, grid.getSizeX());
+        int newY = Math.floorMod(position.y + vY, grid.getSizeY());
 
-        if (willMove()) {
-            if (tryMove(newX, newY)) {
-                eatGrass();
-            }
-        }
+        if (willMove())
+            tryMove(newX, newY);
+
+	eatGrass();
 
         stepsToLive--;
         setVxVy();
@@ -108,7 +107,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
      * This agent eats the grass at its current position
      **/
     private void eatGrass() {
-        energy += space.eatGrassAt(position.x(), position.y());
+        energy += space.eatGrassAt(position.x, position.y);
     }
 
     /**
@@ -117,7 +116,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
      * @param newY The new Y coordinate
      **/
     private boolean tryMove(int newX, int newY) {
-        return space.moveAgentAt(position.x(), position.y(), newX, newY);
+        return space.moveAgentAt(position.x, position.y, newX, newY);
     }
 
     public String getID() {
@@ -136,7 +135,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
      **/
     public void report() {
         System.out.println(getID() + " at " + position.x + ", " + position.y
-                           + " has " + " and " + getSTL() + " steps to live");
+                           + " has " + getSTL() + " steps to live");
     }
 
     @Override
@@ -158,10 +157,10 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     }
 
     public int getX() {
-        return position.x();
+        return position.x;
     }
 
     public int getY() {
-        return position.y();
+        return position.y;
     }
 }
