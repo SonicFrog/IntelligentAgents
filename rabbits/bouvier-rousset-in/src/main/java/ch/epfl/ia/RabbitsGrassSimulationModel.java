@@ -208,7 +208,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     @Override
     public String[] getInitParam() {
-        String[] params = { "NumAgents", "WorldXSize", "WorldYsize",
+        String[] params = { "NumAgents", "WorldXSize", "WorldYSize",
                             "BirthThreshold", "GrowthRate" };
         return params;
     }

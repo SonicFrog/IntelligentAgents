@@ -16,7 +16,12 @@ buildscript {
 }
 
 dependencies {
+    repositories{
+        mavenCentral()
+    }
+
     compile fileTree(dir: 'lib', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
 }
 
 task buildJar(type: OneJar) {

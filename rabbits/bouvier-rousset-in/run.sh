@@ -7,4 +7,5 @@ set -eux
 [[ -x "$(which gradle)" ]] || (echo "Gradle not found!" && exit 1)
 
 gradle buildJar
+gradle test
 java -enableassertions -jar build/libs/bouvier-rousset-in-standalone.jar
