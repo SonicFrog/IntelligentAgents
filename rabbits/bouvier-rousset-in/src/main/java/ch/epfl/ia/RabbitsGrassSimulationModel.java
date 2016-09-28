@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import uchicago.src.sim.space.Object2DGrid;
 
-import uchicago.src.sim.gui.Object2DDisplay;
 import uchicago.src.sim.util.SimUtilities;
 
 import uchicago.src.sim.engine.BasicAction;
@@ -17,6 +17,7 @@ import uchicago.src.sim.engine.SimModelImpl;
 import uchicago.src.sim.gui.ColorMap;
 import uchicago.src.sim.gui.Value2DDisplay;
 import uchicago.src.sim.gui.DisplaySurface;
+import uchicago.src.sim.gui.Object2DDisplay;
 
 
 /**
@@ -33,10 +34,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private static final int NUMAGENTS = 100;
     private static final int WORLDXSIZE = 40;
     private static final int WORLDYSIZE = 40;
-    private static final int TOTAL_MONEY = 200;
+    private static final int GROWTH_RATE = 5;
     private static final int AGENT_MIN_LIFESPAN = 30;
     private static final int AGENT_MAX_LIFESPAN = 50;
 
+    private int grassGrowthRate = GROWTH_RATE;
     private int numAgents = NUMAGENTS;
     private int worldXSize = WORLDXSIZE;
     private int worldYSize = WORLDYSIZE;
@@ -92,7 +94,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     public void buildModel() {
         System.out.println("Running buildModel");
         space = new RabbitsGrassSimulationSpace(worldXSize, worldYSize);
-        space.spreadMoney(TOTAL_MONEY);
 
         for (int i = 0; i < numAgents; i++) {
             addNewAgent();
@@ -109,6 +110,19 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     public void buildSchedule() {
         System.out.println("Running buildSchedule");
 
+        class GrowGrassAction extends BasicAction {
+            @Override
+            public void execute(){
+                Object2DGrid grassSpace = space.getCurrentGrassSpace();
+
+                for (int i = 0; i < grassSpace.getSizeX(); i++) {
+                    for (int j = 0; j < grassSpace.getSizeY(); j++) {
+                        space.growGrassAt(i, j, grassGrowthRate);
+                    }
+                }
+            }
+        }
+
         class RabbitsGrassSimulationStep extends BasicAction {
             @Override
             public void execute() {
@@ -118,8 +132,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
                 }
 
                 int deadRabbitsCount = eatDeadStreamRabbits();
-
-                System.out.println("Found " + deadRabbitsCount + " dead rabbits!");
 
                 for (int i = 0; i < deadRabbitsCount; i++ ) {
                     addNewAgent();
@@ -135,9 +147,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
                 System.out.println("There are " + countLivingAgents() + " living agents!");
             }
         }
-
+        schedule.scheduleActionAtInterval(1, new GrowGrassAction());
         schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
-        schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationCountLiving());
     }
 
     /**
@@ -149,17 +160,17 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         ColorMap map = new ColorMap();
 
         for (int i = 1; i < 16; i++) {
-            map.mapColor(i, new Color((int) i * 8 + 127, 0, 0));
+            map.mapColor(i, 0, i * 10, 0);
         }
         map.mapColor(0, Color.WHITE);
 
-        Value2DDisplay displayMoney =
-            new Value2DDisplay(space.getCurrentMoneySpace(), map);
+        Value2DDisplay displayGrass =
+            new Value2DDisplay(space.getCurrentGrassSpace(), map);
 
         Object2DDisplay agentDisplay = new Object2DDisplay(space.getCurrentAgentSpace());
         agentDisplay.setObjectList(agents);
 
-        surface.addDisplayable(displayMoney, "Money display");
+        surface.addDisplayable(displayGrass, "Grass display");
         surface.addDisplayable(agentDisplay, "Agent display");
     }
 
@@ -169,8 +180,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private void addNewAgent() {
         RabbitsGrassSimulationAgent a =
             new RabbitsGrassSimulationAgent(agentMinLifespan, agentMaxLifespan);
-        agents.add(a);
         space.addAgent(a);
+        agents.add(a);
     }
 
     public int countLivingAgents() {
@@ -185,11 +196,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         List<RabbitsGrassSimulationAgent> dead = agents.stream()
             .filter(a -> a.isDead()).collect(Collectors.toList());
 
-        dead.stream().forEach(a ->
-                              agents.remove(a));
+        dead.stream().forEach(a -> {
+                space.removeAgentAt(a.getX(), a.getY());
+                agents.remove(a);
+            });
 
         return (int) dead.stream().count();
-
     }
 
     @Override
