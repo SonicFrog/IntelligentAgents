@@ -106,13 +106,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         System.out.println("Running buildModel");
         space = new RabbitsGrassSimulationSpace(worldXSize, worldYSize);
 
-        for (int i = 0; i < numAgents; i++) {
+        for (int i = 0; i < numAgents; i++)
             addNewAgent();
-        }
 
-        for (RabbitsGrassSimulationAgent a : agents) {
+        for (RabbitsGrassSimulationAgent a : agents)
             a.report();
-        }
     }
 
     /**
@@ -138,10 +136,14 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             @Override
             public void execute() {
                 SimUtilities.shuffle(agents);
+		int births = 0;
                 for (RabbitsGrassSimulationAgent a : agents) {
                     a.step();
-                    a.tryGiveBirth();
+                    births += a.tryGiveBirth() ? 1 : 0;
                 }
+
+		for (int i = 0; i < births; ++i)
+			addNewAgent();
 
                 int deadRabbitsCount = eatDeadStreamRabbits();
 
@@ -178,12 +180,15 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     /**
      * Generates a new random agent and adds to the simulation space
      **/
-    private void addNewAgent() {
+    private boolean addNewAgent() {
         RabbitsGrassSimulationAgent a =
             new RabbitsGrassSimulationAgent(birthThreshold, agentMinLifespan,
                                             agentMaxLifespan);
-        space.addAgent(a);
-        agents.add(a);
+        boolean ret = space.addAgent(a);
+	if(ret)
+		agents.add(a);
+
+	return ret;
     }
 
     public int countLivingAgents() {

@@ -1,6 +1,11 @@
 package ch.epfl.ia;
 
 import java.awt.Dimension;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import uchicago.src.sim.space.Object2DGrid;
 
@@ -40,23 +45,32 @@ public class RabbitsGrassSimulationSpace {
         return agentSpace.getObjectAt(x, y) != null;
     }
 
-    public void addAgent(RabbitsGrassSimulationAgent agent) {
-        boolean res = false;
-        int count = 0;
+    private Set<Position> getEmptyCells() {
+        Set<Position> set = new HashSet<Position>();
 
-        while (!res) {
-            int x = RandomUtil.randomInt(agentSpace.getSizeX() - 1);
-            int y = RandomUtil.randomInt(agentSpace.getSizeY() - 1);
-            res = !isCellOccupied(x, y);
+        for(int x = agentSpace.getSizeX() - 1; x >= 0; --x)
+            for(int y = agentSpace.getSizeY() - 1; y >= 0; --y)
+                if(!isCellOccupied(x, y))
+                    set.add(new Position(x, y));
 
-            if (res) {
-                agentSpace.putObjectAt(x, y, agent);
-                agent.setPosition(new Position(x, y));
-                agent.setAgentSpace(this);
-            }
+        return set;
+    }
 
-            count++;
-        }
+    public boolean addAgent(RabbitsGrassSimulationAgent agent) {
+        List<Position> cells = new ArrayList<Position>(getEmptyCells());
+        if(cells.size() == 0) {
+            System.out.println("Fail to add new rabbit");
+            return false;
+	}
+
+        Collections.shuffle(cells);
+        Position newPos = cells.get(0);
+
+        agentSpace.putObjectAt(newPos.x, newPos.y, agent);
+        agent.setPosition(newPos);
+        agent.setAgentSpace(this);
+
+	return true;
     }
 
     public boolean moveAgentAt(int x, int y, int newX, int newY) {
