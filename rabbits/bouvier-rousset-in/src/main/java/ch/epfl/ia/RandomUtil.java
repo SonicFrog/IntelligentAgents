@@ -34,9 +34,12 @@ abstract class RandomUtil {
      * @see Math.random
      **/
     public static int randomInt(int lower, int upper) {
-	assert lower < upper;
+	assert lower <= upper;
 
-	int range = Math.abs(lower) + Math.abs(upper) + 1;
+	int range = upper - lower;
+	if(range == 0)
+		return upper;
+
         int r = random.nextInt(range) + lower;
 
 	assert lower <= r;
