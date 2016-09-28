@@ -54,12 +54,14 @@ public class RabbitsGrassSimulationAgent implements Drawable {
         vX = 0;
         vY = 0;
 
-        while ((vX == 0) && (vY == 0)) {
-            if (RandomUtil.randomInt(1) == 0)
-                vX = RandomUtil.randomInt(-1, 1);
-            else
-                vY = RandomUtil.randomInt(-1, 1);
-        }
+        int delta = RandomUtil.randomInt(1) * 2 - 1;
+        if (RandomUtil.randomInt(1) == 0)
+            vX = delta;
+        else
+            vY = delta;
+
+        assert ((vX == -1 || vX == 1) && vY == 0) ||
+                (vX == 0 && (vY == -1 || vY == 1));
     }
 
     /**
@@ -68,8 +70,8 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     public void step() {
         Object2DGrid grid = space.getCurrentAgentSpace();
 
-        int newX = (position.x() + vX) % grid.getSizeX();
-        int newY = (position.y() + vY) % grid.getSizeY();
+        int newX = (position.x() + vX + grid.getSizeX()) % grid.getSizeX();
+        int newY = (position.y() + vY + grid.getSizeY()) % grid.getSizeY();
 
         if (tryMove(newX, newY)) {
             eatGrass();

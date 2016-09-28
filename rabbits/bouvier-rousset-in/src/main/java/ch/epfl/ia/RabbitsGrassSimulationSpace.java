@@ -45,8 +45,8 @@ public class RabbitsGrassSimulationSpace {
         int count = 0;
 
         while (!res) {
-            int x = RandomUtil.randomInt(agentSpace.getSizeX());
-            int y = RandomUtil.randomInt(agentSpace.getSizeY());
+            int x = RandomUtil.randomInt(agentSpace.getSizeX() - 1);
+            int y = RandomUtil.randomInt(agentSpace.getSizeY() - 1);
             res = !isCellOccupied(x, y);
 
             if (res) {
