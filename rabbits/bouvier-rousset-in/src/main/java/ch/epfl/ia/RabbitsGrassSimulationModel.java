@@ -141,12 +141,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             }
         }
 
-        class RabbitsGrassSimulationCountLiving extends BasicAction {
-            @Override
-            public void execute() {
-                System.out.println("There are " + countLivingAgents() + " living agents!");
-            }
-        }
         schedule.scheduleActionAtInterval(1, new GrowGrassAction());
         schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
     }
@@ -157,12 +151,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     public void buildDisplay() {
         System.out.println("Running buildDisplay");
 
-        ColorMap map = new ColorMap();
+        // ColorMap map = new ColorMap();
 
-        for (int i = 1; i < 16; i++) {
-            map.mapColor(i, 0, i * 10, 0);
-        }
-        map.mapColor(0, Color.WHITE);
+        // for (int i = 1; i < 16; i++) {
+        //     map.mapColor(i, 0, i * 10, 0);
+        // }
+        // map.mapColor(0, Color.WHITE);
 
         Value2DDisplay displayGrass =
             new Value2DDisplay(space.getCurrentGrassSpace(), map);
