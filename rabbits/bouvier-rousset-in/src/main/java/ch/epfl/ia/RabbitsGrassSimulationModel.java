@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import uchicago.src.sim.space.Object2DGrid;
+import uchicago.src.sim.analysis.OpenSequenceGraph;
 
 import uchicago.src.sim.util.SimUtilities;
 
@@ -32,12 +33,14 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private Schedule schedule;
 
     private static final int NUMAGENTS = 100;
-    private static final int WORLDXSIZE = 40;
-    private static final int WORLDYSIZE = 40;
-    private static final int GROWTH_RATE = 5;
+    private static final int WORLDXSIZE = 20;
+    private static final int WORLDYSIZE = 20;
+    private static final int BIRTH_THRESHOLD = 50;
+    private static final int GROWTH_RATE = 10;
     private static final int AGENT_MIN_LIFESPAN = 30;
     private static final int AGENT_MAX_LIFESPAN = 50;
 
+    private int birthThreshold = BIRTH_THRESHOLD;
     private int grassGrowthRate = GROWTH_RATE;
     private int numAgents = NUMAGENTS;
     private int worldXSize = WORLDXSIZE;
@@ -51,6 +54,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private DisplaySurface surface;
 
     private List<RabbitsGrassSimulationAgent> agents;
+
+    private OpenSequenceGraph rabbitsInSpace;
 
 
     public static void main(String[] args) {
@@ -71,12 +76,18 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
         agents = new ArrayList<>();
 
+        if (rabbitsInSpace != null) {
+            rabbitsInSpace.dispose();
+        }
+        rabbitsInSpace = new OpenSequenceGraph("Number of rabbits", this);
+
         if (surface != null) {
             surface.dispose();
         }
         surface = null;
         surface = new DisplaySurface(this, "Carry drop model window 1");
         this.registerDisplaySurface("Carry drop model window1", surface);
+        this.registerMediaProducer("Plot", rabbitsInSpace);
     }
 
     @Override
@@ -129,13 +140,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
                 SimUtilities.shuffle(agents);
                 for (RabbitsGrassSimulationAgent a : agents) {
                     a.step();
+                    a.tryGiveBirth();
                 }
 
                 int deadRabbitsCount = eatDeadStreamRabbits();
-
-                for (int i = 0; i < deadRabbitsCount; i++ ) {
-                    addNewAgent();
-                }
 
                 surface.updateDisplay();
             }
@@ -158,13 +166,12 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         // }
         // map.mapColor(0, Color.WHITE);
 
-        Value2DDisplay displayGrass =
-            new Value2DDisplay(space.getCurrentGrassSpace(), map);
+        // Value2DDisplay displayGrass =
+        //     new Value2DDisplay(space.getCurrentGrassSpace(), map);
 
         Object2DDisplay agentDisplay = new Object2DDisplay(space.getCurrentAgentSpace());
         agentDisplay.setObjectList(agents);
 
-        surface.addDisplayable(displayGrass, "Grass display");
         surface.addDisplayable(agentDisplay, "Agent display");
     }
 
@@ -173,7 +180,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
      **/
     private void addNewAgent() {
         RabbitsGrassSimulationAgent a =
-            new RabbitsGrassSimulationAgent(agentMinLifespan, agentMaxLifespan);
+            new RabbitsGrassSimulationAgent(birthThreshold, agentMinLifespan,
+                                            agentMaxLifespan);
         space.addAgent(a);
         agents.add(a);
     }
@@ -201,8 +209,24 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     @Override
     public String[] getInitParam() {
         String[] params = { "NumAgents", "WorldXSize", "WorldYsize",
-                            "AgentMinLifespan", "AgentMaxLifespan" };
+                            "BirthThreshold", "GrowthRate" };
         return params;
+    }
+
+    public void setGrowthRate(int rate) {
+        grassGrowthRate = rate;
+    }
+
+    public int getGrowthRate() {
+        return grassGrowthRate;
+    }
+
+    public void setBirthThreshold(int th)  {
+        birthThreshold = th;
+    }
+
+    public int getBirthThreshold() {
+        return birthThreshold;
     }
 
     @Override

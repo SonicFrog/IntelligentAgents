@@ -23,17 +23,21 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 
     private int stepsToLive;
 
+    private int birthThreshold;
+
     private Position position;
 
     private RabbitsGrassSimulationSpace space;
 
     private int vX, vY;
 
-    public RabbitsGrassSimulationAgent(int minLifespan, int maxLifespan) {
+    public RabbitsGrassSimulationAgent(int birthThreshold, int minLifespan,
+                                       int maxLifespan) {
         position = new Position(-1, -1);
         stepsToLive = (int) ((Math.random() * (maxLifespan - minLifespan))
                              + minLifespan);
         ID = nextID++;
+        this.birthThreshold = birthThreshold;
     }
 
     public void setAgentSpace(RabbitsGrassSimulationSpace space) {
@@ -61,7 +65,11 @@ public class RabbitsGrassSimulationAgent implements Drawable {
             vY = delta;
 
         assert ((vX == -1 || vX == 1) && vY == 0) ||
-                (vX == 0 && (vY == -1 || vY == 1));
+            (vX == 0 && (vY == -1 || vY == 1));
+    }
+
+    private boolean willMove() {
+        return RandomUtil.randomInt(2) == 1;
     }
 
     /**
@@ -73,12 +81,28 @@ public class RabbitsGrassSimulationAgent implements Drawable {
         int newX = (position.x() + vX + grid.getSizeX()) % grid.getSizeX();
         int newY = (position.y() + vY + grid.getSizeY()) % grid.getSizeY();
 
-        if (tryMove(newX, newY)) {
-            eatGrass();
+        if (willMove()) {
+            if (tryMove(newX, newY)) {
+                eatGrass();
+            }
         }
 
         stepsToLive--;
         setVxVy();
+    }
+
+    /**
+     * Tries to give birth to a new rabbit
+     **/
+    public boolean tryGiveBirth() {
+        if (energy >= birthThreshold) {
+            energy -= birthThreshold;
+
+            System.out.println("Gave birth to a new rabbit!");
+
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -116,25 +140,12 @@ public class RabbitsGrassSimulationAgent implements Drawable {
                            + " has " + " and " + getSTL() + " steps to live");
     }
 
-    /**
-     * Makes this rabbit give birth if able
-     **/
-    public boolean giveBirth(int threshold) {
-        boolean res = energy >= threshold;
-
-        if (res) {
-            this.energy -= threshold;
-        }
-
-        return res;
-    }
-
     @Override
     public void draw(SimGraphics arg0) {
-        if (stepsToLive > 10)
+        if (10 < energy && energy < 30)
             arg0.drawFastRoundRect(Color.yellow);
-        else if (stepsToLive == 0)
-            arg0.drawFastRoundRect(Color.black);
+        else if (30 <= energy && energy < 60)
+            arg0.drawFastRoundRect(Color.green);
         else
             arg0.drawFastRoundRect(Color.blue);
     }
