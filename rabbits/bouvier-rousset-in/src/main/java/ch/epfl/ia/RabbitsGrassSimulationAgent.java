@@ -83,7 +83,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
         if (willMove())
             tryMove(newX, newY);
 
-	eatGrass();
+        eatGrass();
 
         stepsToLive--;
         setVxVy();

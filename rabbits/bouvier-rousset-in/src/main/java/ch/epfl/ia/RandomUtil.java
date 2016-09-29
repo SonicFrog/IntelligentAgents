@@ -18,14 +18,14 @@ abstract class RandomUtil {
      * @see Math.random
      **/
     public static int randomInt(int upper) {
-	assert upper > 0;
+        assert upper > 0;
 
-	int r = random.nextInt(upper + 1);
+        int r = random.nextInt(upper + 1);
 
-	assert 0 <= r;
-	assert r <= upper;
+        assert 0 <= r;
+        assert r <= upper;
 
-	return r;
+        return r;
     }
 
     /**
@@ -34,17 +34,17 @@ abstract class RandomUtil {
      * @see Math.random
      **/
     public static int randomInt(int lower, int upper) {
-	assert lower <= upper;
+        assert lower <= upper;
 
-	int range = upper - lower;
-	if(range == 0)
-		return upper;
+        int range = upper - lower;
+        if(range == 0)
+            return upper;
 
         int r = random.nextInt(range) + lower;
 
-	assert lower <= r;
-	assert r <= upper;
+        assert lower <= r;
+        assert r <= upper;
 
-	return r;
+        return r;
     }
 }

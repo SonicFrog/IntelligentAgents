@@ -61,7 +61,7 @@ public class RabbitsGrassSimulationSpace {
         if(cells.size() == 0) {
             System.out.println("Fail to add new rabbit");
             return false;
-	}
+        }
 
         Collections.shuffle(cells);
         Position newPos = cells.get(0);
@@ -70,7 +70,7 @@ public class RabbitsGrassSimulationSpace {
         agent.setPosition(newPos);
         agent.setAgentSpace(this);
 
-	return true;
+        return true;
     }
 
     public boolean moveAgentAt(int x, int y, int newX, int newY) {

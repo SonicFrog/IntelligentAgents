@@ -136,14 +136,14 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             @Override
             public void execute() {
                 SimUtilities.shuffle(agents);
-		int births = 0;
+                int births = 0;
                 for (RabbitsGrassSimulationAgent a : agents) {
                     a.step();
                     births += a.tryGiveBirth() ? 1 : 0;
                 }
 
-		for (int i = 0; i < births; ++i)
-			addNewAgent();
+                for (int i = 0; i < births; ++i)
+                    addNewAgent();
 
                 int deadRabbitsCount = eatDeadStreamRabbits();
 
@@ -185,10 +185,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             new RabbitsGrassSimulationAgent(birthThreshold, agentMinLifespan,
                                             agentMaxLifespan);
         boolean ret = space.addAgent(a);
-	if(ret)
-		agents.add(a);
+        if(ret)
+            agents.add(a);
 
-	return ret;
+        return ret;
     }
 
     public int countLivingAgents() {
