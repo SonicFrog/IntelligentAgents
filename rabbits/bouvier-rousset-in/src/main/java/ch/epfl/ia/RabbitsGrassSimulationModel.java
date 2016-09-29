@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import uchicago.src.sim.space.Object2DGrid;
+
+import uchicago.src.sim.analysis.DataSource;
 import uchicago.src.sim.analysis.OpenSequenceGraph;
+import uchicago.src.sim.analysis.Sequence;
+
+import uchicago.src.sim.space.Object2DGrid;
 
 import uchicago.src.sim.util.SimUtilities;
 
@@ -57,6 +61,19 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     private OpenSequenceGraph rabbitsInSpace;
 
+    class TotalRabbits implements DataSource, Sequence {
+
+        @Override
+        public Object execute() {
+            return getSValue();
+        }
+
+        @Override
+        public double getSValue() {
+            return (double) agents.stream().count();
+        }
+    }
+
 
     public static void main(String[] args) {
         SimInit init = new SimInit();
@@ -79,13 +96,15 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         if (rabbitsInSpace != null) {
             rabbitsInSpace.dispose();
         }
+
         rabbitsInSpace = new OpenSequenceGraph("Number of rabbits", this);
 
         if (surface != null) {
             surface.dispose();
         }
-        surface = null;
+
         surface = new DisplaySurface(this, "Carry drop model window 1");
+
         this.registerDisplaySurface("Carry drop model window1", surface);
         this.registerMediaProducer("Plot", rabbitsInSpace);
     }
@@ -97,6 +116,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         buildDisplay();
 
         surface.display();
+        rabbitsInSpace.display();
     }
 
     /**
@@ -136,14 +156,14 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             @Override
             public void execute() {
                 SimUtilities.shuffle(agents);
-                int births = 0;
-                for (RabbitsGrassSimulationAgent a : agents) {
+
+                for (RabbitsGrassSimulationAgent a : agents.toArray(new RabbitsGrassSimulationAgent[0])) {
                     a.step();
-                    births += a.tryGiveBirth() ? 1 : 0;
+                    if (a.tryGiveBirth())
+                        addNewAgent();
                 }
 
-                for (int i = 0; i < births; ++i)
-                    addNewAgent();
+
 
                 int deadRabbitsCount = eatDeadStreamRabbits();
 
@@ -151,7 +171,15 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
             }
         }
 
+        class RabbitsGraphUpdate extends BasicAction {
+            @Override
+            public void execute() {
+                rabbitsInSpace.step();
+            }
+        }
+
         schedule.scheduleActionAtInterval(1, new GrowGrassAction());
+        schedule.scheduleActionAtInterval(10, new RabbitsGraphUpdate());
         schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
     }
 
@@ -175,6 +203,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         agentDisplay.setObjectList(agents);
 
         surface.addDisplayable(agentDisplay, "Agent display");
+        rabbitsInSpace.addSequence("Rabbits in space", new TotalRabbits());
     }
 
     /**
