@@ -1,6 +1,7 @@
 package ch.epfl.ia;
 
 import java.awt.Color;
+import ch.epfl.ia.RandomUtil;
 
 import uchicago.src.sim.gui.Drawable;
 import uchicago.src.sim.gui.SimGraphics;
@@ -21,8 +22,6 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 
     private int ID;
 
-    private int stepsToLive;
-
     private int birthThreshold;
 
     private Position position;
@@ -31,12 +30,18 @@ public class RabbitsGrassSimulationAgent implements Drawable {
 
     private int vX, vY;
 
-    public RabbitsGrassSimulationAgent(int birthThreshold, int minLifespan,
-                                       int maxLifespan) {
+    private int agingRate;
+
+    private int deathThreshold;
+
+    public RabbitsGrassSimulationAgent(int birthThreshold, int agingRate,
+                                       int deathThreshold) {
         position = new Position(-1, -1);
-        stepsToLive = RandomUtil.randomInt(minLifespan, maxLifespan);
+        energy = RandomUtil.randomInt(deathThreshold, birthThreshold);
         ID = nextID++;
+        this.agingRate = agingRate;
         this.birthThreshold = birthThreshold;
+        this.deathThreshold = deathThreshold;
     }
 
     public void setAgentSpace(RabbitsGrassSimulationSpace space) {
@@ -47,7 +52,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
      * Checks if this agent is dead
      **/
     public boolean isDead() {
-        return stepsToLive < 1;
+        return energy < deathThreshold;
     }
 
     /**
@@ -84,9 +89,13 @@ public class RabbitsGrassSimulationAgent implements Drawable {
             tryMove(newX, newY);
 
         eatGrass();
-
-        stepsToLive--;
+        age();
         setVxVy();
+    }
+
+    private void age() {
+        System.out.println("Current rabbit has " + energy + " and spends " + agingRate);
+        energy -= agingRate;
     }
 
     /**
@@ -124,18 +133,11 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     }
 
     /**
-     * Get remaining living time for this agent
-     **/
-    public int getSTL() {
-        return stepsToLive;
-    }
-
-    /**
      * Prints out a complete report for this agent
      **/
     public void report() {
         System.out.println(getID() + " at " + position.x + ", " + position.y
-                           + " has " + getSTL() + " steps to live");
+                           + " has " + energy + " steps to live");
     }
 
     @Override

@@ -39,18 +39,18 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private static final int NUMAGENTS = 100;
     private static final int WORLDXSIZE = 20;
     private static final int WORLDYSIZE = 20;
-    private static final int BIRTH_THRESHOLD = 50;
-    private static final int GROWTH_RATE = 10;
-    private static final int AGENT_MIN_LIFESPAN = 30;
-    private static final int AGENT_MAX_LIFESPAN = 50;
+    private static final int BIRTH_THRESHOLD = 70;
+    private static final int GROWTH_RATE = 5;
+    private static final int DEATH_THRESHOLD = 20;
+    private static final int AGING_RATE = 4;
 
     private int birthThreshold = BIRTH_THRESHOLD;
     private int grassGrowthRate = GROWTH_RATE;
+    private int agingRate = AGING_RATE;
     private int numAgents = NUMAGENTS;
     private int worldXSize = WORLDXSIZE;
     private int worldYSize = WORLDYSIZE;
-    private int agentMinLifespan = AGENT_MIN_LIFESPAN;
-    private int agentMaxLifespan = AGENT_MAX_LIFESPAN;
+    private int deathThreshold = DEATH_THRESHOLD;
 
 
     private RabbitsGrassSimulationSpace space;
@@ -163,8 +163,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
                         addNewAgent();
                 }
 
-
-
                 int deadRabbitsCount = eatDeadStreamRabbits();
 
                 surface.updateDisplay();
@@ -189,15 +187,16 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     public void buildDisplay() {
         System.out.println("Running buildDisplay");
 
-        // ColorMap map = new ColorMap();
+        ColorMap map = new ColorMap();
 
-        // for (int i = 1; i < 16; i++) {
-        //     map.mapColor(i, 0, i * 10, 0);
-        // }
-        // map.mapColor(0, Color.WHITE);
+        for (int i = 1; i < 1000; i++) {
+            map.mapColor(i, 0, 127, 0);
+        }
 
-        // Value2DDisplay displayGrass =
-        //     new Value2DDisplay(space.getCurrentGrassSpace(), map);
+        map.mapColor(0, Color.WHITE);
+
+        Value2DDisplay displayGrass =
+            new Value2DDisplay(space.getCurrentGrassSpace(), map);
 
         Object2DDisplay agentDisplay = new Object2DDisplay(space.getCurrentAgentSpace());
         agentDisplay.setObjectList(agents);
@@ -211,8 +210,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
      **/
     private boolean addNewAgent() {
         RabbitsGrassSimulationAgent a =
-            new RabbitsGrassSimulationAgent(birthThreshold, agentMinLifespan,
-                                            agentMaxLifespan);
+            new RabbitsGrassSimulationAgent(birthThreshold, agingRate,
+                                            deathThreshold);
         boolean ret = space.addAgent(a);
         if(ret)
             agents.add(a);
@@ -242,8 +241,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     @Override
     public String[] getInitParam() {
-        String[] params = { "NumAgents", "WorldXSize", "WorldYSize",
-                            "BirthThreshold", "GrowthRate" };
+        String[] params = { "NumAgents", "WorldXSize", "WorldYSize", "AgingRate",
+                            "BirthThreshold", "GrowthRate", "DeathThreshold" };
         return params;
     }
 
@@ -261,6 +260,22 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     public int getBirthThreshold() {
         return birthThreshold;
+    }
+
+    public int getDeathThreshold() {
+        return deathThreshold;
+    }
+
+    public void setAgingRate(int a) {
+        agingRate = a;
+    }
+
+    public int getAgingRate() {
+        return agingRate;
+    }
+
+    public void setDeathThreshold(int a) {
+        deathThreshold = a;
     }
 
     @Override
@@ -295,21 +310,5 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
 
     public int getNumAgents() {
         return numAgents;
-    }
-
-    public int getAgentMinLifespan() {
-        return this.agentMinLifespan;
-    }
-
-    public void setAgentMinLifespan(int i) {
-        this.agentMinLifespan = i;
-    }
-
-    public int getAgentMaxLifespan() {
-        return agentMaxLifespan;
-    }
-
-    public void setAgentMaxLifespan(int i) {
-        agentMaxLifespan = i;
     }
 }
