@@ -19,8 +19,27 @@
 \subsection{Assumptions}
 % Describe the assumptions of your world model and implementation (e.g. is the grass amount bounded in each cell) %
 
+\begin{itemize}
+	\item rabbits dies when out of energy instead of out of steps to do
+	\item it first try to move, then eat grass, so if it fails to move, it
+		will still try to eat locally
+	\item when a rabbit give birth, and there is no more place left to spawn
+		a new one, it still consume energy by simply having energy being
+		greater than the birth threshold (one can imagine giving birth
+		and the baby simply being put elsewhere)
+\end{itemize}
+
 \subsection{Implementation Remarks}
 % Provide important details about your implementation, such as handling of boundary conditions %
+
+\begin{itemize}
+	\item color of each rabbit are for the level of energy
+	\begin{itemize}
+		\item yellow for enery between 10 and 30
+		\item green for enery between 30 and 60
+		\item blue else
+	\end{itemize}
+\end{itemize}
 
 \section{Results}
 % In this section, you study and describe how different variables (e.g. birth threshold, grass growth rate etc.) or combinations of variables influence the results. Different experiments with diffrent settings are described below with your observations and analysis
