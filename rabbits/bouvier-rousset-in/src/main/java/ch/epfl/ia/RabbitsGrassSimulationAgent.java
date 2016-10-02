@@ -35,10 +35,11 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     private int deathThreshold;
 
     public RabbitsGrassSimulationAgent(int birthThreshold, int agingRate,
-                                       int deathThreshold) {
+                                       int deathThreshold, int initEnergy) {
         position = new Position(-1, -1);
         energy = RandomUtil.randomInt(deathThreshold, birthThreshold);
         ID = nextID++;
+        this.energy = initEnergy;
         this.agingRate = agingRate;
         this.birthThreshold = birthThreshold;
         this.deathThreshold = deathThreshold;
@@ -115,7 +116,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     /**
      * This agent eats the grass at its current position
      **/
-    private void eatGrass() {
+    public void eatGrass() {
         energy += space.eatGrassAt(position.x, position.y);
     }
 
@@ -124,7 +125,7 @@ public class RabbitsGrassSimulationAgent implements Drawable {
      * @param newX The new X coordinate
      * @param newY The new Y coordinate
      **/
-    private boolean tryMove(int newX, int newY) {
+    public boolean tryMove(int newX, int newY) {
         return space.moveAgentAt(position.x, position.y, newX, newY);
     }
 
@@ -148,6 +149,10 @@ public class RabbitsGrassSimulationAgent implements Drawable {
             arg0.drawFastRoundRect(Color.green);
         else
             arg0.drawFastRoundRect(Color.blue);
+    }
+
+    public int getEnergy() {
+        return energy;
     }
 
     public Position getPosition() {

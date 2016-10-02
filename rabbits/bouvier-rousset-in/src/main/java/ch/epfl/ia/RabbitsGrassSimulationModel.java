@@ -43,7 +43,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private static final int GROWTH_RATE = 5;
     private static final int DEATH_THRESHOLD = 20;
     private static final int AGING_RATE = 4;
+    private static final int INITIAL_ENERGY = 20;
 
+    private int initialEnergy = INITIAL_ENERGY;
     private int birthThreshold = BIRTH_THRESHOLD;
     private int grassGrowthRate = GROWTH_RATE;
     private int agingRate = AGING_RATE;
@@ -211,7 +213,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     private boolean addNewAgent() {
         RabbitsGrassSimulationAgent a =
             new RabbitsGrassSimulationAgent(birthThreshold, agingRate,
-                                            deathThreshold);
+                                            deathThreshold, initialEnergy);
         boolean ret = space.addAgent(a);
         if(ret)
             agents.add(a);
