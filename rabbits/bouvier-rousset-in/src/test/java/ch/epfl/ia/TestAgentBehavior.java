@@ -89,4 +89,40 @@ public class TestAgentBehavior {
         boolean ret = agent1.tryMove(agent2.getPosition().x, agent2.getPosition().y);
         assertFalse("Agent moved to an occupied cell!", ret);
     }
+
+    /**
+     * Tests that an agent correctly moves to any unoccupied cell
+     **/
+    @Test
+    public void testAgentMovesCorrectly() throws Exception {
+        RabbitsGrassSimulationAgent agent = createAgent();
+        RabbitsGrassSimulationSpace space = new RabbitsGrassSimulationSpace(X_SIZE, Y_SIZE);
+
+        space.addAgent(agent);
+
+        assertTrue("Agent could not move to start position!", agent.tryMove(0, 0));
+
+        for (int i = 1; i < X_SIZE; i++) {
+            for (int j = 0; j < Y_SIZE; j++) {
+                assertTrue("Agent failed to move to (" + i + ", " + j + ")",
+                           agent.tryMove(i, j));
+            }
+        }
+    }
+
+    /**
+     * Tests that an agent gives birth after eating enough
+     **/
+    @Test
+    public void testAgentGivesBirth() throws Exception {
+        RabbitsGrassSimulationAgent agent = createAgent();
+        RabbitsGrassSimulationSpace space = new RabbitsGrassSimulationSpace(X_SIZE, Y_SIZE);
+
+        space.addAgent(agent);
+        space.growGrassAt(0, 0, BIRTH_THRES);
+        assertTrue("Agent failed to move correctly!", agent.tryMove(0, 0));
+        agent.eatGrass();
+
+        assertEquals("Agent did not lose energy!", INIT_ENERGY, agent.getEnergy());
+    }
 }
