@@ -45,12 +45,17 @@
         \item  If no space is available when a rabbit gives birth,
           no rabbit is added but the energy is still consumed.
 
-	\item color of each rabbit are for the level of energy
+	\item Each rabbit gets assigned a color depending on its
+          current energy level
 	\begin{itemize}
 		\item yellow for enery between 10 and 30
-		\item green for enery between 30 and 60
-		\item blue else
-	\end{itemize}
+		\item green for energy between 30 and 60
+		\item blue otherwise
+         \end{itemize}
+       \item There is a graph representing the total number of
+         rabbits. Every 5 step of simulation a new point is added to
+         the graph.
+
 \end{itemize}
 
 \section{Results}
@@ -61,6 +66,7 @@
 \subsubsection{Setting}
 
 \begin{itemize}
+  \item Initial energy 20
   \item Birth threshold 70
   \item Death threshold 20
   \item Growth rate 5
@@ -72,12 +78,14 @@
 % Elaborate on the observed results %
 The number of rabbits quickly grows to the saturation point which
 seems to be around 350 rabbits and then oscillates around this
-number.
+number. There is enough grass for all the rabbits to feed but some
+rabbits die after giving birth
 
 \subsection{Experiment 2}
 
 \subsubsection{Setting}
 \begin{itemize}
+  \item Initial energy 20
   \item Growth rate 3
   \item Aging rate 5
   \item Initial rabbit count 350
@@ -96,8 +104,39 @@ rabbits.
 \subsection{Experiment 3}
 
 \subsubsection{Setting}
+\begin{itemize}
+  \item Initial energy 20
+  \item Growth rate 3
+  \item Aging rate 10
+  \item Birth threshold 15
+  \item Death threshold 0
+  \item World size 20x20
+  \item Initial rabbit count 375
+\end{itemize}
 
 \subsubsection{Observations}
 % Elaborate on the observed results %
+Considering the grass does not grow fast and the rabbits age very
+quickly we notice a rapid drop in population and after about 4 steps
+of simulation all rabbits are dead.
+
+\subsection{Experiment 4}
+\subsubsection{Setting}
+\begin{itemize}
+  \item Initial energy 50
+  \item Growth rate 5
+  \item Aging rate 6
+  \item Initial rabbit count 350
+  \item World size 40x40
+  \item Birth threshold 60
+  \item Death threshold 20
+\end{itemize}
+
+\subsubsection{Observations}
+The size of the world allows for the grass to accumulate in some cells
+and the rabbit population is able to grow relatively fast up to around
+1100 rabbits. When the population goes higher there is a grass
+shortage and some rabbits die.
+
 
 \end{document}
