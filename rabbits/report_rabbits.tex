@@ -20,19 +20,31 @@
 % Describe the assumptions of your world model and implementation (e.g. is the grass amount bounded in each cell) %
 
 \begin{itemize}
-	\item rabbits dies when out of energy instead of out of steps to do
-	\item it first try to move, then eat grass, so if it fails to move, it
-		will still try to eat locally
-	\item when a rabbit give birth, and there is no more place left to spawn
-		a new one, it still consume energy by simply having energy being
-		greater than the birth threshold (one can imagine giving birth
-		and the baby simply being put elsewhere)
+        \item When a rabbits reaches an amount of energy greater or
+          equal to the birth threshold parameter, a new rabbit is
+          created and placed randomly on the grid.
+        \item Each rabbit dies when its energy reaches an amount lower
+          than the death threshold parameter.
+        \item Eating grass gives the rabbit an amount of energy
+          corresponding to the amount of grass eaten.
+        \item Additionally at each step the rabbits lose a certain
+          amount of energy determined by the ``Aging rate'' parameter.
+	\item At each step the rabbits decide if they are going to
+          move this turn. If so they then choose a random direction
+          out of the four possible. The rabbits eat the grass upon
+          arriving on the new cell but also eats the grass on the cell
+          it is on if it decides not to move.
+        \item The grass can grow infinitely high on each cell and is
+          only reset to 0 when a rabbit eats it.
 \end{itemize}
 
 \subsection{Implementation Remarks}
 % Provide important details about your implementation, such as handling of boundary conditions %
 
 \begin{itemize}
+        \item  If no space is available when a rabbit gives birth,
+          no rabbit is added but the energy is still consumed.
+
 	\item color of each rabbit are for the level of energy
 	\begin{itemize}
 		\item yellow for enery between 10 and 30
@@ -48,19 +60,40 @@
 
 \subsubsection{Setting}
 
+\begin{itemize}
+  \item Birth threshold 70
+  \item Death threshold 20
+  \item Growth rate 5
+  \item Aging rate 4
+  \item Initial rabbit count 100
+\end{itemize}
+
 \subsubsection{Observations}
 % Elaborate on the observed results %
+The number of rabbits quickly grows to the saturation point which
+seems to be around 350 rabbits and then oscillates around this
+number.
 
 \subsection{Experiment 2}
 
 \subsubsection{Setting}
+\begin{itemize}
+  \item Growth rate 3
+  \item Aging rate 5
+  \item Initial rabbit count 350
+  \item World size 20x20
+  \item Birth threshold 50
+  \item Death threshold 0
+\end{itemize}
 
 \subsubsection{Observations}
 % Elaborate on the observed results %
+The number of rabbits falls down very quickly at the start due to a
+shortage of grass. Once the population is small enough and there is
+again enough grass it starts to grow back and stabilizes at around 200
+rabbits.
 
-\vdots
-
-\subsection{Experiment n}
+\subsection{Experiment 3}
 
 \subsubsection{Setting}
 

@@ -39,6 +39,7 @@ public class TestAgentBehavior {
         agent.setAgentSpace(space);
         space.addAgent(agent);
 
+        // Agent needs one more step to die!
         double stepCount = Math.ceil(INIT_ENERGY / AGING_RATE) + 1;
 
         for (double i = 0; i < stepCount; i++) {

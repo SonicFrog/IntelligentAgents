@@ -37,7 +37,6 @@ public class RabbitsGrassSimulationAgent implements Drawable {
     public RabbitsGrassSimulationAgent(int birthThreshold, int agingRate,
                                        int deathThreshold, int initEnergy) {
         position = new Position(-1, -1);
-        energy = RandomUtil.randomInt(deathThreshold, birthThreshold);
         ID = nextID++;
         this.energy = initEnergy;
         this.agingRate = agingRate;

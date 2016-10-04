@@ -128,6 +128,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         System.out.println("Running buildModel");
         space = new RabbitsGrassSimulationSpace(worldXSize, worldYSize);
 
+        System.out.println("Spawning " + numAgents + " initial rabbits!");
+
         for (int i = 0; i < numAgents; i++)
             addNewAgent();
 
@@ -179,7 +181,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
         }
 
         schedule.scheduleActionAtInterval(1, new GrowGrassAction());
-        schedule.scheduleActionAtInterval(10, new RabbitsGraphUpdate());
+        schedule.scheduleActionAtInterval(5, new RabbitsGraphUpdate());
         schedule.scheduleActionBeginning(0, new RabbitsGrassSimulationStep());
     }
 
@@ -244,8 +246,17 @@ public class RabbitsGrassSimulationModel extends SimModelImpl {
     @Override
     public String[] getInitParam() {
         String[] params = { "NumAgents", "WorldXSize", "WorldYSize", "AgingRate",
-                            "BirthThreshold", "GrowthRate", "DeathThreshold" };
+                            "BirthThreshold", "GrowthRate", "DeathThreshold",
+                            "InitialEnergy"};
         return params;
+    }
+
+    public void setInitialEnergy(int a) {
+        initialEnergy = a;
+    }
+
+    public int getInitialEnergy() {
+        return initialEnergy;
     }
 
     public void setGrowthRate(int rate) {
