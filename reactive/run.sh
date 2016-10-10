@@ -6,7 +6,7 @@ set -eux
 
 [ -x "$(which gradle)" ] || (echo "Gradle not found!" && exit 1)
 
-find -name '*.java' | xargs -n 1 -P 4 javac -cp ../logist/logist.jar
+find -name '*.java' | xargs javac -cp ../logist/logist.jar
 mkdir -p bin
 rsync -a --delete --exclude='*.java' src/ bin/
 find src -not -name '*.java' -type f -delete
