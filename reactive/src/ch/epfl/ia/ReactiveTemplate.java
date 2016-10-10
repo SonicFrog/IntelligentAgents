@@ -1,4 +1,4 @@
-package template;
+package ch.epfl.ia;
 
 import java.util.Random;
 
