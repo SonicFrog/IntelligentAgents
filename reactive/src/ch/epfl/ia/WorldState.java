@@ -1,8 +1,10 @@
 package ch.epfl.ia;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Random;
 import java.util.HashMap;
+import java.util.TreeSet;
 import java.util.ArrayList;
 
 import logist.plan.Action;
@@ -17,163 +19,113 @@ import logist.topology.Topology.City;
 import logist.task.Task;
 import logist.task.TaskDistribution;
 
-public class WorldState {
-    private final Random random = new Random();
-    private final Topology topo;
-    private final TaskDistribution dist;
+public class AgentState {
 
-    private HashMap<AgentState, Action> bestActions = new HashMap<>();
+    public final City currentCity;
+    public final City destCity;
+    public final boolean hasTask;
 
-    public WorldState(Topology topo, TaskDistribution dist) {
-        this.topo = topo;
-        this.dist = dist;
+    private List<SimpleActions> possibleActions;
+    private List<AgentState> possibleStates;
+
+    public AgentState(City current, City dest, boolean task) {
+
+        if (current == null) {
+            throw new IllegalArgumentException("The agent must be in a city");
+        }
+
+        if (dest == null && task) {
+            throw new IllegalArgumentException("The destination for a task can't be null");
+        }
+
+        currentCity = current;
+        destCity = to;
+        hasTask = task;
     }
 
-    private List<Action> listActions(AgentState state) {
-        List<Action> actions = new ArrayList<>();
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((currentCity == null) ? 0 : currentCity.hashCode());
+        result = prime * result + (hasTask ? 1231 : 1237);
+        result = prime * result + ((destCity == null) ? 0 : destCity.hashCode());
+        return result;
+    }
 
-        assert state != null;
+    public boolean isPossibleAction(Action a) {
+        boolean isDelivery = a.accept(new IsDeliveryVisitor());
 
-        for (City c : topo.cities()) {
-            if (c == state.currentCity && state.currentTask != null) {
-                actions.clear();
+        if (isDelivery && !hasTask)
+            return false;
 
-                if (state.currentTask.deliveryCity == c) {
-                    actions.add(new Delivery(state.currentTask));
-                } else {
-                    actions.add(new Move(state.currentTask.deliveryCity));
-                }
+        if (isDelivery && hasTask)
+            return true;
 
-                return actions;
-            } else if (c == state.currentCity && state.currentTask == null) {
-                if (state.availableTask != null) {
-                    actions.add(new Pickup(state.availableTask));
-                }
-            } else {
-                actions.add(new Move(c));
+        if (a.accept(new IsMoveVisitor())) {
+            Move action = (Move) a;
+            return action.accept(new CityExtractor()).equals()
+        }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null)
+            return false;
+
+        State that = (State) other;
+        boolean task = this.hasTask == that.hasTask;
+        boolean sameDest = that.destCity != null && this.destCity != null &&
+            (that.destCity.equals(this.destCity));
+
+        if (that.destCity == null && this.destCity == null)
+            return task;
+
+        return this.currentCity.equals(that.currentCity) &&
+            sameDest && task;
+    }
+
+    public static List<AgentState> generateStates(List<City> cities) {
+        if (possibleStates != null) {
+            return possibleStates;
+        }
+
+        possibleStates = new ArrayList<>();
+
+        for (City current : cities) {
+            // Being in every city with no task available
+            possibleStates.add(new WorldState(current, null, false));
+            for (City dest : cities) {
+                if (dest.equals(current))
+                    continue;
+
+                possibleStates.add(new WorldState(current, true, dest));
             }
         }
 
-        return actions;
+        return possibleStates;
     }
 
-    private Action best(AgentState state) {
-        return bestActions.getOrDefault(
-            state,
-            new Move(state.currentCity.randomNeighbor(random)));
-    }
-
-    private City bestDestination(City from, Task currentTask) {
-        if (currentTask != null) {
-            return currentTask.deliveryCity;
-        }
-
-        City best = from;
-
-        for (City c : topo.cities()) {
-            if (c.equals(from)) {
-
-            } else {
-
-            }
-        }
-
-        return null;
-    }
-
-    public AgentState apply(AgentState state, Move action, Task avail) {
-        return new AgentState(
-            action.accept(new CityExtractor()),
-            state.currentTask,
-            avail
-        );
-    }
-
-    public AgentState apply(AgentState state, Delivery action, Task avail) {
-        return new AgentState(
-            state.currentCity,
-            null,
-            avail
-        );
-    }
-
-    public AgentState apply(AgentState state, Pickup action, Task avail) {
-        return new AgentState(
-            state.currentCity,
-            action.accept(new TaskExtractor()),
-            avail
-        );
-    }
-
-    private double averageReward(City from) {
-        double acc = 0.0;
-
-        for (int i = 0; i < topo.cities().size(); i++) {
-            City c = topo.cities().get(i);
-
-            if (c == from) {
-                continue;
-            }
-
-            acc += rewardFor(from, c);
-        }
-
-        return acc / (topo.cities().size() - 1);
-    }
-
-    private double rewardFor(City from, City to) {
-        return ((double) dist.reward(from, to)) * dist.probability(from, to);
-    }
-
-    public boolean isGoodEnough() {
-        // TODO: stub
-        return false;
-    }
-
-    private static class AgentState {
-        public final City currentCity;
-        public final Task currentTask;
-        public final Task availableTask;
-
-        public AgentState(City city, Task task, Task avail) {
-            currentCity = city;
-            currentTask = task;
-            availableTask = avail;
+    public class IsDeliveryVisitor implements ActionHandler<Boolean> {
+        @Override
+        public Boolean moveTo(City city) {
+            return false;
         }
 
         @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof AgentState)) {
-                return false;
-            }
-
-            AgentState that = (AgentState) other;
-
-            return this.currentCity.equals(that.currentCity) &&
-                this.currentTask.equals(that.currentTask);
-        }
-    }
-
-    public class TaskExtractor implements ActionHandler<Task> {
-        @Override
-        public Task moveTo(Topology.City city) {
-            return null;
+        public Boolean deliver(Task t) {
+            return true;
         }
 
         @Override
-        public Task deliver(Task t) {
-            return t;
-        }
-
-        @Override
-        public Task pickup(Task t) {
-            return t;
+        public Boolean pickup(Task t) {
+            return false;
         }
     }
 
     public class CityExtractor implements ActionHandler<City> {
         @Override
-        public City moveTo(Topology.City city) {
+        public City moveTo(City city) {
             return city;
         }
 
