@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'gradle-one-jar'
 
 
-mainClassName = 'ch.epfl.ia.MainRabbit'
+mainClassName = 'ch.epfl.ia.ReactiveMain'
 
 buildscript {
     repositories{
@@ -25,6 +25,6 @@ dependencies {
 }
 
 task buildJar(type: OneJar) {
-    mainClass = "ch.epfl.ia.MainRabbit"
+    mainClass = "ch.epfl.ia.ReactiveMain"
     additionalDir = file('lib')
 }
