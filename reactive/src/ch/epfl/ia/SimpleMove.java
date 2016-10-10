@@ -20,7 +20,7 @@ public class SimpleMove extends SimpleAction {
         return true;
     }
 
-    @Overide
+    @Override
     public boolean isDelivery() {
         return false;
     }
@@ -30,14 +30,14 @@ public class SimpleMove extends SimpleAction {
         final int prime = 31;
         int hash = 1;
 
-        hash = prime * hash + (from != null) ? from.hashCode : 0;
-        hash = prime * hash + (to != null) ? to.hashCode : 0;
+        hash = prime * hash + ((from != null) ? from.hashCode() : 0);
+        hash = prime * hash + ((to != null) ? to.hashCode() : 0);
 
         return hash;
     }
 
     @Override
-    public void equals(Object other) {
+    public boolean equals(Object other) {
         return false;
     }
 }

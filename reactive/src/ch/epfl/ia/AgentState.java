@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import logist.plan.Action;
 import logist.plan.ActionHandler;
@@ -19,16 +20,21 @@ import logist.topology.Topology.City;
 import logist.task.Task;
 import logist.task.TaskDistribution;
 
+/**
+ * The state representation and utility class
+ * @author Ogier Bouvier
+ **/
 public class AgentState {
 
     public final City currentCity;
     public final City destCity;
     public final boolean hasTask;
 
-    private List<SimpleActions> possibleActions;
-    private List<AgentState> possibleStates;
+    private static List<AgentState> possibleStates;
 
-    public AgentState(City current, City dest, boolean task) {
+    private Set<SimpleAction> legalActions;
+
+    public AgentState(City current, boolean task, City dest) {
 
         if (current == null) {
             throw new IllegalArgumentException("The agent must be in a city");
@@ -39,7 +45,7 @@ public class AgentState {
         }
 
         currentCity = current;
-        destCity = to;
+        destCity = dest;
         hasTask = task;
     }
 
@@ -53,19 +59,19 @@ public class AgentState {
         return result;
     }
 
-    public boolean isPossibleAction(Action a) {
-        boolean isDelivery = a.accept(new IsDeliveryVisitor());
-
-        if (isDelivery && !hasTask)
-            return false;
-
-        if (isDelivery && hasTask)
+    public boolean isPossibleAction(SimpleAction a) {
+        if (a.isDelivery() && hasTask)
             return true;
 
-        if (a.accept(new IsMoveVisitor())) {
-            Move action = (Move) a;
-            return action.accept(new CityExtractor()).equals()
-        }
+        if (a.isDelivery() && !hasTask)
+            return false;
+
+        SimpleMove action = (SimpleMove) a;
+
+        if (action.from.equals(currentCity) && !action.to.equals(currentCity))
+            return true;
+
+        return false;
     }
 
     @Override
@@ -73,7 +79,7 @@ public class AgentState {
         if (other == null)
             return false;
 
-        State that = (State) other;
+        AgentState that = (AgentState) other;
         boolean task = this.hasTask == that.hasTask;
         boolean sameDest = that.destCity != null && this.destCity != null &&
             (that.destCity.equals(this.destCity));
@@ -85,6 +91,16 @@ public class AgentState {
             sameDest && task;
     }
 
+    public Set<SimpleAction> findLegalActions(Set<SimpleAction> all) {
+        if (legalActions == null) {
+            legalActions = all.stream().filter(
+                a -> isPossibleAction(a))
+                .collect(Collectors.toCollection(TreeSet::new));
+        }
+
+        return legalActions;
+    }
+
     public static List<AgentState> generateStates(List<City> cities) {
         if (possibleStates != null) {
             return possibleStates;
@@ -94,49 +110,15 @@ public class AgentState {
 
         for (City current : cities) {
             // Being in every city with no task available
-            possibleStates.add(new WorldState(current, null, false));
+            possibleStates.add(new AgentState(current, false, null));
             for (City dest : cities) {
                 if (dest.equals(current))
                     continue;
 
-                possibleStates.add(new WorldState(current, true, dest));
+                possibleStates.add(new AgentState(current, true, dest));
             }
         }
 
         return possibleStates;
-    }
-
-    public class IsDeliveryVisitor implements ActionHandler<Boolean> {
-        @Override
-        public Boolean moveTo(City city) {
-            return false;
-        }
-
-        @Override
-        public Boolean deliver(Task t) {
-            return true;
-        }
-
-        @Override
-        public Boolean pickup(Task t) {
-            return false;
-        }
-    }
-
-    public class CityExtractor implements ActionHandler<City> {
-        @Override
-        public City moveTo(City city) {
-            return city;
-        }
-
-        @Override
-        public City deliver(Task t) {
-            return t.deliveryCity;
-        }
-
-        @Override
-        public City pickup(Task t) {
-            return t.pickupCity;
-        }
     }
 }
