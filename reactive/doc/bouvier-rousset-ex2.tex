@@ -20,12 +20,12 @@
 \subsection{Representation Description}
 % describe how you design the state representation, the possible actions, the reward table and the probability transition table
 
-We generate a possible set of states, each with either
+The state is an object containing the 3 following informations.
 
-\begin{itemize}
-	\item The current city, a task and the destination city of the task.
-	\item The current city and without a task.
-\end{itemize}
+First we have the current city the agent is in. The second property is
+a boolean indicating whether the agent is currently performing a task
+and the last one is the destination city if the agent carries a task
+or nothing otherwise.
 
 From each of these state we have two possibilities
 
@@ -47,6 +47,9 @@ map. Then, we do it over and over (for each path in the state graph),
 until the map stabilize, meaning that we have reached the optimal
 value for every state.
 
+Invalid actions will never be performed by the agent since all actions
+are checked before being added to the state transition map.
+
 \section{Results}
 % in this section, you describe several results from the experiments with your reactive agent
 
@@ -57,10 +60,8 @@ value for every state.
 We tested using three different discount factor. One agent runs with a
 discount factor of 0.20, another 0.60 and the last 0.90.
 
-We tried two parameters, one with discount factor of 0.01 and one with discount
-factor of 0.85.
-
-It was simply set by editing the config/agent.xml file.
+The experience can be repeated by running the simulation with
+reactive-rla20, reactive-rla60 and reactive-rla90 agents.
 
 \subsubsection{Observations}
 \begin{figure}
@@ -68,6 +69,12 @@ It was simply set by editing the config/agent.xml file.
   \includegraphics[scale=0.7]{compare_discount}
   \centering
 \end{figure}
+
+We fail to see a clear difference between the 3 settings of discount
+factor, except maybe the fact that the blue agent seems to stabilize
+its average reward faster than the other two leading us to think that
+the higher the discount factor, the faster the agent stabilizes its
+average reward per kilometer.
 
 \subsection{Experiment 2: Comparisons with dummy agents}
 % you compare the results of your agent with two dummy agents: the random agent that was already given in the starter files and another dummy agent that you define and create. You should report the results from the simulations using the topologies given in the starter files and optionally, additional topologies that you create.
