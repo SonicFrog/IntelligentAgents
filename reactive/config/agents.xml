@@ -10,6 +10,12 @@
         <set discount-factor=".85"/>
     </agent>
 
+    <agent name="reactive-dumb">
+        <set class-path="bin/"/>
+        <set class-name="ch.epfl.ia.ReactiveRLA"/>
+        <set discount-factor=".85"/>
+    </agent>
+
     <agent name="reactive-random">
         <set class-path ="bin/" />
         <set class-name ="ch.epfl.ia.ReactiveRandom" />
