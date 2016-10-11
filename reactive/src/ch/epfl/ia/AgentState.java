@@ -30,7 +30,7 @@ public class AgentState {
     public final City destCity;
     public final boolean hasTask;
 
-    private static List<AgentState> possibleStates;
+    private static Set<AgentState> possibleStates;
 
     private Set<SimpleAction> legalActions;
 
@@ -101,12 +101,12 @@ public class AgentState {
         return legalActions;
     }
 
-    public static List<AgentState> generateStates(List<City> cities) {
+    public static Set<AgentState> generateStates(List<City> cities) {
         if (possibleStates != null) {
             return possibleStates;
         }
 
-        possibleStates = new ArrayList<>();
+        possibleStates = new TreeSet<>();
 
         for (City current : cities) {
             // Being in every city with no task available
