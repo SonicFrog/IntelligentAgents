@@ -65,13 +65,9 @@ It was simply set by editing the config/agent.xml file.
 \subsubsection{Observations}
 \begin{figure}
   \caption{Simulation result for the three different settings}
-  \includegraphics{compare_discount}
+  \includegraphics[scale=0.7]{compare_discount}
   \centering
 \end{figure}
-
-\begin{itemize}
-	\item 0.85
-\end{itemize}
 
 \subsection{Experiment 2: Comparisons with dummy agents}
 % you compare the results of your agent with two dummy agents: the random agent that was already given in the starter files and another dummy agent that you define and create. You should report the results from the simulations using the topologies given in the starter files and optionally, additional topologies that you create.
@@ -87,8 +83,12 @@ factor of 0.85 and the second one has no parameter.
 \subsubsection{Observations}
 \begin{figure}
   \caption{Simulation result for the 3 agents comparison}
-  \includegraphics{compare_3}
+  \includegraphics[scale=0.6]{compare_3}
 \end{figure}
-% elaborate on the observed results
+
+We notice that our agent performs clearly better than the other two
+(about 200 more reward per kilometer), while the dumb agent perform
+almost the same as the random agent.
+
 
 \end{document}
