@@ -10,4 +10,4 @@ find -name '*.java' | xargs javac -cp ../logist/logist.jar
 mkdir -p bin
 rsync -a --delete --exclude='*.java' src/ bin/
 find src -not -name '*.java' -type f -delete
-java -enableassertions -jar ../logist/logist.jar config/reactive.xml  reactive-dumb reactive-random reactive-rla
+java -enableassertions -jar ../logist/logist.jar config/reactive.xml  reactive-rla20 reactive-rla60 reactive-rla90

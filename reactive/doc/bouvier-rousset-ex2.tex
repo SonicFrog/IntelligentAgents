@@ -27,10 +27,10 @@ We generate a possible set of states, each with either
 	\item The current city and without a task.
 \end{itemize}
 
-From each of these state we can have either
+From each of these state we have two possibilities
 
 \begin{itemize}
-	\item If we have task, move to the destination city. 
+	\item If we have task, move to the destination city.
 	\item If we don't have a task, we go to the neighbooring city which
 		has the best potential reward, the reward of a package minus
 		the cost of travelling there. Cost itself is defined by the
@@ -41,9 +41,11 @@ From each of these state we can have either
 % describe the implementation details of the representations above and the implementation details of the reinforcement learning algorithm you implemented
 
 For each possible state, we find the possible actions (for exemple, we can't
-deliver if we don't have a task), then for each, we compute the best reward and
-add it to the generated map. Then, we do it over and over (for each path), until
-the map stabilize, meaning that there is no more better value.
+deliver if we don't have a task), then for each, we compute the best
+reward weighted by the probability of  and add it to the generated
+map. Then, we do it over and over (for each path in the state graph),
+until the map stabilize, meaning that we have reached the optimal
+value for every state.
 
 \section{Results}
 % in this section, you describe several results from the experiments with your reactive agent
@@ -52,16 +54,29 @@ the map stabilize, meaning that there is no more better value.
 % the purpose of this experiment is to understand how the discount factor influences the result
 
 \subsubsection{Setting}
-% you describe how you perform the experiment (you also need to specify the configuration used for the experiment)
+We tested using three different discount factor. One agent runs with a
+discount factor of 0.20, another 0.60 and the last 0.90.
 
 \subsubsection{Observations}
-% you describe the experimental results and the conclusions you inferred from these results
+\begin{figure}
+  \caption{Simulation result for the three different settings}
+  \includegraphics{compare_discount}
+  \centering
+\end{figure}
 
 \subsection{Experiment 2: Comparisons with dummy agents}
 % you compare the results of your agent with two dummy agents: the random agent that was already given in the starter files and another dummy agent that you define and create. You should report the results from the simulations using the topologies given in the starter files and optionally, additional topologies that you create.
 
 \subsubsection{Setting}
-% you describe how you perform the experiment and you describe the dummy agent you created (you also need to specify the configuration used for the experiment)
+We have implemented a dumb agent which is basically the same as the
+Random agent except it always picks up task when one is available. If
+not it will move to random neighbor of the current city.
+
+We run all 3 agents in one simulation. The first two have a discount
+factor of 0.85 and the second one has no parameter.
 
 \subsubsection{Observations}
-% elaborate on the observed results
+\begin{figure}
+  \caption{Simulation result for the 3 agents comparison}
+  \includegraphics{compare_3}
+\end{figure}

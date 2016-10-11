@@ -10,6 +10,24 @@
         <set discount-factor=".85"/>
     </agent>
 
+    <agent name="reactive-rla20">
+        <set class-path="bin/"/>
+        <set class-name="ch.epfl.ia.ReactiveRLA"/>
+        <set discount-factor=".20"/>
+    </agent>
+
+    <agent name="reactive-rla60">
+        <set class-path="bin/"/>
+        <set class-name="ch.epfl.ia.ReactiveRLA"/>
+        <set discount-factor=".85"/>
+    </agent>
+
+    <agent name="reactive-rla90">
+        <set class-path="bin/"/>
+        <set class-name="ch.epfl.ia.ReactiveRLA"/>
+        <set discount-factor=".90"/>
+    </agent>
+
     <agent name="reactive-dumb">
         <set class-path="bin/"/>
         <set class-name="ch.epfl.ia.ReactiveRLA"/>
