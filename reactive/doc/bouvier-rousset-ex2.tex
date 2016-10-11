@@ -8,7 +8,7 @@
 
 % put your group number and names in the author field
 \title{\bf Exercise 2: A Reactive Agent for the Pickup and Delivery Problem}
-\author{Group \textnumero: Ogier Bouvier, Val\'erian Rousset}
+\author{Group \textnumero 17: Ogier Bouvier, Val\'erian Rousset}
 
 % the report should not be longer than 3 pages
 
@@ -20,33 +20,30 @@
 \subsection{Representation Description}
 % describe how you design the state representation, the possible actions, the reward table and the probability transition table
 
-For the state representation, we took it from what seems closest to reality
-
-\begin{tikzpicture}
-	\node (no-task) at (0,0) {no-task};
-	\node (choose-task) at (6,0)  {choose-task};
-	\node (got-task) at (12,0)  {got-task};
-	\node (no-task-end) at (6,-4) {no-task};
-
-	\draw[->] (no-task) -- (choose-task) node[midway,sloped,below]{city have task};
-	\draw[->] (no-task) -- (no-task-end) node[midway,sloped,below]{city don't have task};
-	\draw[->] (choose-task) -- (got-task) node[midway,sloped,below]{reward / distance};
-	\draw[->] (choose-task) -- (no-task-end) node[midway,sloped,below]{1 - reward / distance};
-	\draw[->] (got-task) -- (no-task-end) node[midway,sloped,below]{go to destination};
-\end{tikzpicture}
-
-The reward and probability goes as such
+We generate a possible set of states, each with either
 
 \begin{itemize}
-	\item no-task - choose-task, reward is zero, probability of task in city
-	\item no-task - no-task, reward is zero, 1 - probability of task in city
-	\item choose-task - got-task, reward is zero, reward / distance
-	\item choose-task - no-task, reward is zero, 1 - reward / distance
-	\item got-task - no-task, reward is from task, certain
+	\item The current city, a task and the destination city of the task.
+	\item The current city and without a task.
+\end{itemize}
+
+From each of these state we can have either
+
+\begin{itemize}
+	\item If we have task, move to the destination city. 
+	\item If we don't have a task, we go to the neighbooring city which
+		has the best potential reward, the reward of a package minus
+		the cost of travelling there. Cost itself is defined by the
+		distance to the city times the cost per kilometer.
 \end{itemize}
 
 \subsection{Implementation Details}
 % describe the implementation details of the representations above and the implementation details of the reinforcement learning algorithm you implemented
+
+For each possible state, we find the possible actions (for exemple, we can't
+deliver if we don't have a task), then for each, we compute the best reward and
+add it to the generated map. Then, we do it over and over (for each path), until
+the map stabilize, meaning that there is no more better value.
 
 \section{Results}
 % in this section, you describe several results from the experiments with your reactive agent
@@ -68,14 +65,3 @@ The reward and probability goes as such
 
 \subsubsection{Observations}
 % elaborate on the observed results
-
-\vdots
-
-\subsection{Experiment n}
-% other experiments you would like to present
-
-\subsubsection{Setting}
-
-\subsubsection{Observations}
-
-\end{document}
