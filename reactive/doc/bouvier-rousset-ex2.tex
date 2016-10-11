@@ -30,7 +30,7 @@ We generate a possible set of states, each with either
 From each of these state we have two possibilities
 
 \begin{itemize}
-	\item If we have task, move to the destination city.
+	\item If we have a task, move to the destination city.
 	\item If we don't have a task, we go to the neighbooring city which
 		has the best potential reward, the reward of a package minus
 		the cost of travelling there. Cost itself is defined by the
@@ -57,12 +57,21 @@ value for every state.
 We tested using three different discount factor. One agent runs with a
 discount factor of 0.20, another 0.60 and the last 0.90.
 
+We tried two parameters, one with discount factor of 0.01 and one with discount
+factor of 0.85.
+
+It was simply set by editing the config/agent.xml file.
+
 \subsubsection{Observations}
 \begin{figure}
   \caption{Simulation result for the three different settings}
   \includegraphics{compare_discount}
   \centering
 \end{figure}
+
+\begin{itemize}
+	\item 0.85
+\end{itemize}
 
 \subsection{Experiment 2: Comparisons with dummy agents}
 % you compare the results of your agent with two dummy agents: the random agent that was already given in the starter files and another dummy agent that you define and create. You should report the results from the simulations using the topologies given in the starter files and optionally, additional topologies that you create.
@@ -80,3 +89,6 @@ factor of 0.85 and the second one has no parameter.
   \caption{Simulation result for the 3 agents comparison}
   \includegraphics{compare_3}
 \end{figure}
+% elaborate on the observed results
+
+\end{document}
