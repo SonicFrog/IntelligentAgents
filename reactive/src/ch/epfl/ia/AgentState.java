@@ -22,6 +22,7 @@ import logist.task.TaskDistribution;
 
 /**
  * The state representation and utility class
+ *
  * @author Ogier Bouvier
  **/
 public class AgentState {

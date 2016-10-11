@@ -14,7 +14,7 @@ import logist.task.TaskDistribution;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
 
-public class ReactiveTemplate implements ReactiveBehavior {
+public class ReactiveRLA implements ReactiveBehavior {
     private int numActions;
     private Agent myAgent;
 

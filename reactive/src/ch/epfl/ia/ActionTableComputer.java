@@ -7,6 +7,9 @@ import logist.simulation.Vehicle;
 
 import logist.topology.Topology;
 
+/**
+ * Class used to compute the best actions table for some vehicle
+ **/
 public class ActionTableComputer {
 
     private final RewardTable reward;
@@ -54,7 +57,7 @@ public class ActionTableComputer {
                         sigma += stateValues.get(nextState) * p;
                     }
 
-                    finalQ = sigma + R;
+                    finalQ = discount * sigma + R;
 
                     if (finalQ > bestValue) {
                         bestValue = finalQ;
@@ -69,8 +72,8 @@ public class ActionTableComputer {
                 bestActions.put(s, bestAction);
             }
 
-            changed = false;
             goodEnough = !changed;
+            changed = false;
         }
 
         return new ActionTable(bestActions);

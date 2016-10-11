@@ -1,0 +1,3 @@
+.gitignore
+
+: bouvier-rousset-ex2.tex |> pdflatex %f; rm *.aux *.log |> %B.pdf
