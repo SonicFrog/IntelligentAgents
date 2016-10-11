@@ -1,6 +1,7 @@
 package ch.epfl.ia;
 
 import java.util.Random;
+import java.util.HashMap;
 
 import logist.simulation.Vehicle;
 import logist.agent.Agent;
@@ -14,11 +15,10 @@ import logist.topology.Topology;
 import logist.topology.Topology.City;
 
 public class ReactiveTemplate implements ReactiveBehavior {
-
-    private Random random;
-    private double pPickup;
     private int numActions;
     private Agent myAgent;
+
+    private HashMap<Vehicle, ActionTable> vehiclesBest = new HashMap<>();
 
     @Override
     public void setup(Topology topology, TaskDistribution td, Agent agent) {
@@ -28,26 +28,37 @@ public class ReactiveTemplate implements ReactiveBehavior {
         Double discount = agent.readProperty("discount-factor", Double.class,
                                              0.95);
 
-        this.random = new Random();
-        this.pPickup = discount;
+        RewardTable rewards = new RewardTable(td);
+        ProbabilityTable probs = new ProbabilityTable(td);
+        ActionTableComputer computer =
+            new ActionTableComputer(rewards, probs,
+                                    topology, discount);
+
+        for (Vehicle car : agent.vehicles()) {
+            vehiclesBest.put(car, computer.computeBestActions(car));
+        }
+
         this.numActions = 0;
         this.myAgent = agent;
     }
 
     @Override
     public Action act(Vehicle vehicle, Task availableTask) {
-        Action action;
+        Action action = null;
+        ActionTable table = vehiclesBest.get(vehicle);
 
-        if (availableTask == null || random.nextDouble() > pPickup) {
-            City currentCity = vehicle.getCurrentCity();
-            action = new Move(currentCity.randomNeighbor(random));
-        } else {
-            action = new Pickup(availableTask);
-        }
+
+        action = table.best(vehicle.getCurrentCity(), availableTask);
 
         if (numActions >= 1) {
-            System.out.println("The total profit after "+numActions+" actions is "+myAgent.getTotalProfit()+" (average profit: "+(myAgent.getTotalProfit() / (double)numActions)+")");
+            System.out.println("The total profit after " +
+                               numActions+" actions is " +
+                               myAgent.getTotalProfit() +
+                               " (average profit: " +
+                               (myAgent.getTotalProfit()
+                                / (double) numActions) + ")");
         }
+
         numActions++;
 
         return action;

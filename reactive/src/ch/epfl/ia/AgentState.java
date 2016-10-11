@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Random;
 import java.util.HashMap;
-import java.util.TreeSet;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -68,8 +68,11 @@ public class AgentState {
 
         SimpleMove action = (SimpleMove) a;
 
-        if (action.from.equals(currentCity) && !action.to.equals(currentCity))
-            return true;
+        if (action.from.equals(currentCity) && !action.to.equals(currentCity)) {
+            if (currentCity.hasNeighbor(action.to)) {
+                return true;
+            }
+        }
 
         return false;
     }
@@ -95,7 +98,7 @@ public class AgentState {
         if (legalActions == null) {
             legalActions = all.stream().filter(
                 a -> isPossibleAction(a))
-                .collect(Collectors.toCollection(TreeSet::new));
+                .collect(Collectors.toCollection(HashSet::new));
         }
 
         return legalActions;
@@ -106,7 +109,7 @@ public class AgentState {
             return possibleStates;
         }
 
-        possibleStates = new TreeSet<>();
+        possibleStates = new HashSet<>();
 
         for (City current : cities) {
             // Being in every city with no task available

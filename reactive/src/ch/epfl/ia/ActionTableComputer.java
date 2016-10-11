@@ -12,12 +12,14 @@ public class ActionTableComputer {
     private final RewardTable reward;
     private final ProbabilityTable probs;
     private final Topology topo;
+    private final double discount;
 
     public ActionTableComputer(RewardTable reward, ProbabilityTable probs,
                                Topology topo, double discount) {
         this.reward = reward;
         this.probs = probs;
         this.topo = topo;
+        this.discount = discount;
     }
 
     /**
@@ -31,6 +33,11 @@ public class ActionTableComputer {
         HashMap<AgentState, SimpleAction> bestActions = new HashMap<>();
 
         boolean goodEnough = false;
+        boolean changed = false;
+
+        for (AgentState s : states) {
+            stateValues.put(s, 0.0);
+        }
 
         while (!goodEnough) {
             for (AgentState s : states) {
@@ -38,14 +45,32 @@ public class ActionTableComputer {
                 double bestValue = Double.NEGATIVE_INFINITY;
 
                 for (SimpleAction a : s.findLegalActions(actions)) {
-                    double rewardVal = reward.reward(s, a, car);
+                    double finalQ = 0.0;
+                    double R = reward.reward(s, a, car);
+                    double sigma = 0.0;
 
-                    if (rewardVal > bestValue) {
-                        bestValue = rewardVal;
+                    for (AgentState nextState : states) {
+                        double p = probs.transitionProbability(s, a, nextState);
+                        sigma += stateValues.get(nextState) * p;
+                    }
+
+                    finalQ = sigma + R;
+
+                    if (finalQ > bestValue) {
+                        bestValue = finalQ;
                         bestAction = a;
                     }
                 }
+
+                if (stateValues.put(s, bestValue) != bestValue) {
+                    changed = true;
+                }
+
+                bestActions.put(s, bestAction);
             }
+
+            changed = false;
+            goodEnough = !changed;
         }
 
         return new ActionTable(bestActions);

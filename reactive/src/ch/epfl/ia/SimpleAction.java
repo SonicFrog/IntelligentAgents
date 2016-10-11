@@ -2,7 +2,7 @@ package ch.epfl.ia;
 
 import java.util.Set;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.HashSet;
 
 import logist.topology.Topology.City;
 
@@ -10,7 +10,7 @@ import logist.topology.Topology.City;
  * A better wrapper for the actions
  **/
 public abstract class SimpleAction {
-    Set<SimpleAction> possibleActions = new TreeSet<>();
+    Set<SimpleAction> possibleActions = new HashSet<>();
 
     public abstract int hashCode();
 
@@ -28,7 +28,7 @@ public abstract class SimpleAction {
      * Generates all possible actions regardless of state
      **/
     public static Set<SimpleAction> generateAllActions(List<City> cities) {
-        Set<SimpleAction> actions = new TreeSet<>();
+        Set<SimpleAction> actions = new HashSet<>();
 
         for (City current : cities) {
             for (City dest : cities) {
