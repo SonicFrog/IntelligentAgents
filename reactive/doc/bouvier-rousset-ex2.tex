@@ -76,6 +76,9 @@ its average reward faster than the other two leading us to think that
 the higher the discount factor, the faster the agent stabilizes its
 average reward per kilometer.
 
+Thus, the value of the parameter is not really relevant, but having a value
+close to one give an algorithm converging faster.
+
 \subsection{Experiment 2: Comparisons with dummy agents}
 % you compare the results of your agent with two dummy agents: the random agent that was already given in the starter files and another dummy agent that you define and create. You should report the results from the simulations using the topologies given in the starter files and optionally, additional topologies that you create.
 
@@ -84,8 +87,21 @@ We have implemented a dumb agent which is basically the same as the
 Random agent except it always picks up task when one is available. If
 not it will move to random neighbor of the current city.
 
-We run all 3 agents in one simulation. The first two have a discount
-factor of 0.85 and the second one has no parameter.
+Thus we have
+\begin{itemize}
+	\item A random agent from the skeleton.
+	\item Our implementation of the reactive algorithm.
+	\item The newly defined random agent, which take always the available
+		task at the current city.
+\end{itemize}
+
+For each, we have some parameters which goes as such, specified in
+config/agent.xml.
+\begin{itemize}
+	\item Basic random agent: discount factor of 0.85.
+	\item Our reactive agent: discount factor of 0.85.
+	\item The newly designed random agent: no parameters.
+\end{itemize}
 
 \subsubsection{Observations}
 \begin{figure}
@@ -97,5 +113,8 @@ We notice that our agent performs clearly better than the other two
 (about 200 more reward per kilometer), while the dumb agent perform
 almost the same as the random agent.
 
+It seems that using a reactive algorithm is way better than going at random.
+Even if the differences are kind of small, in a real setup, having a performance
+improvement of 10\% is very relevant.
 
 \end{document}
