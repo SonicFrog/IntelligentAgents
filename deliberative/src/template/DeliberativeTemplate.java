@@ -117,6 +117,25 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			return new PlanTask(this.current, plan, this.notPicked, newCarrying);
 		}
 
+		public boolean equals(Object o) {
+			if (!(o instanceof PlanTask))
+				return false;
+
+			PlanTask that = (PlanTask) o;
+
+			// using toString because framework do not redefinie equals
+			return this.current.toString().equals(that.current.toString()) &&
+				this.plan.toString().equals(that.plan.toString()) &&
+				this.notPicked.equals(that.notPicked) &&
+				this.carrying.equals(that.carrying);
+		}
+
+		public int hashCode() {
+			return this.current.hashCode() +
+				this.notPicked.hashCode() +
+				this.carrying.hashCode();
+		}
+
 		private Plan dupPlan(Plan plan) {
 			Plan newPlan = new Plan(this.current);
 
@@ -179,12 +198,12 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		boolean changed = true;
 		while (changed) {
 			Set<PlanTask> nextPlanTasks = new HashSet();
-			for (PlanTask PlanTask : planTasks) {
-				Set<PlanTask> nexts = getNextPlanTasks(vehicle, planTask);
+			for (PlanTask pt : planTasks) {
+				Set<PlanTask> nexts = getNextPlanTasks(vehicle, pt);
 				nextPlanTasks.addAll(nexts);
 			}
 
-			changed = !planTask.equals(nextPlanTasks);
+			changed = !planTasks.equals(nextPlanTasks);
 			planTasks = nextPlanTasks;
 		}
 
