@@ -11,8 +11,11 @@ import logist.task.TaskDistribution;
 import logist.task.TaskSet;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An optimal planner for one vehicle.
@@ -118,6 +121,9 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		}
 
 		public boolean equals(Object o) {
+			if (o == this)
+				return true;
+
 			if (!(o instanceof PlanTask))
 				return false;
 
@@ -131,8 +137,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		}
 
 		public int hashCode() {
-			return this.current.hashCode() +
-				this.notPicked.hashCode() +
+			return this.notPicked.hashCode() +
 				this.carrying.hashCode();
 		}
 
@@ -166,25 +171,16 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		return vehicle.capacity() - totalWeight > toAdd.weight;
 	}
 
-	private Set<PlanTask> getNextPlanTasks(Vehicle vehicle, PlanTask planTask) {
-		Set<PlanTask> ret = new HashSet<>();
+	private Stream<PlanTask> getNextPlanTasks(Vehicle vehicle, PlanTask planTask) {
+		TaskSet currentCarrying = planTask.getCarrying();
 
-		for (Task task: planTask.getNotPicked()) {
-			if (!canCarry(vehicle, planTask.getCarrying(), task))
-				continue;
+		Stream<PlanTask> notPicked = planTask.getNotPicked().stream().parallel()
+			.filter(t -> canCarry(vehicle, currentCarrying, t))
+			.map(t -> planTask.moveAndPickupTask(t));
+		Stream<PlanTask> carrying = planTask.getCarrying().stream().parallel()
+			.map(t -> planTask.moveAndDeliverTask(t));
 
-			PlanTask pt = planTask.moveAndPickupTask(task);
-
-			ret.add(pt);
-		}
-
-		for (Task task: planTask.getCarrying()) {
-			PlanTask pt = planTask.moveAndDeliverTask(task);
-
-			ret.add(pt);
-		}
-
-		return ret;
+		return Stream.concat(notPicked, carrying);
 	}
 
 	private Plan bfs(Vehicle vehicle, TaskSet tasks) {
@@ -192,33 +188,25 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		Plan plan = new Plan(current);
 
 		PlanTask planTask = new PlanTask(current, plan, tasks, TaskSet.noneOf(tasks));
-		Set<PlanTask> planTasks = new HashSet();
+		Set<PlanTask> planTasks = new HashSet<>();
 		planTasks.add(planTask);
 
 		boolean changed = true;
 		while (changed) {
-			Set<PlanTask> nextPlanTasks = new HashSet();
-			for (PlanTask pt : planTasks) {
-				Set<PlanTask> nexts = getNextPlanTasks(vehicle, pt);
-				nextPlanTasks.addAll(nexts);
-			}
+			Set<PlanTask> nextPlanTasks = planTasks.stream().parallel()
+				.flatMap(pt -> getNextPlanTasks(vehicle, pt))
+				.collect(Collectors.toSet());
 
 			changed = !planTasks.equals(nextPlanTasks);
 			planTasks = nextPlanTasks;
+
+			System.out.println(planTasks.size());
 		}
 
-		double smallest = Integer.MAX_VALUE;
-		PlanTask best = null;
-		for (PlanTask pt : planTasks) {
-			double distance = pt.getPlan().totalDistance();
-
-			if (distance < smallest) {
-				smallest = distance;
-				best = pt;
-			}
-		}
-
-		return best.getPlan();
+		return planTasks.stream()
+			.map(pt -> pt.getPlan())
+			.min(Comparator.comparing(p -> p.totalDistance()))
+			.get();
 	}
 
 	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
