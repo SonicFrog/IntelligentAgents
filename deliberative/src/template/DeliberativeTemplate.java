@@ -100,13 +100,16 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			for (City c: this.current.pathTo(city)) {
 				plan.appendMove(c);
 
+				int oldNotPickedSize = newNotPicked.size();
+				int oldCarryingSize = newCarrying.size();
 				newNotPicked.stream()
 					.filter(t -> t.pickupCity.equals(c))
 					.forEach(t -> {
 						plan.appendPickup(t);
 						newNotPicked.remove(t);
-						newCarrying.remove(t);
+						newCarrying.add(t);
 					});
+				assert oldNotPickedSize - newNotPicked.size() == newCarrying.size() - oldCarryingSize;
 
 				newCarrying.stream()
 					.filter(t -> t.deliveryCity.equals(c))
@@ -125,10 +128,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			TaskSet newCarrying = this.getCarrying();
 
 			move(plan, newNotPicked, newCarrying, task.pickupCity);
-			plan.appendPickup(task);
-
-			newNotPicked.remove(task);
-			newCarrying.add(task);
 
 			return new PlanTask(task.pickupCity, plan, newNotPicked, newCarrying);
 		}
@@ -138,13 +137,11 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 			Plan plan = this.getPlan();
 			TaskSet newCarrying = this.getCarrying();
+			TaskSet newNotPicked = this.getNotPicked();
 
-			move(plan, this.notPicked, newCarrying, task.deliveryCity);
-			plan.appendDelivery(task);
+			move(plan, newNotPicked, newCarrying, task.deliveryCity);
 
-			newCarrying.remove(task);
-
-			return new PlanTask(task.deliveryCity, plan, this.notPicked, newCarrying);
+			return new PlanTask(task.deliveryCity, plan, newNotPicked, newCarrying);
 		}
 
 		public boolean equals(Object o) {
@@ -212,8 +209,10 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 	private PlanTask getFinished(Set<PlanTask> planTasks) {
 		for (PlanTask pt : planTasks)
-			if (pt.getCarrying().size() == 0 && pt.getNotPicked().size() == 0)
+			if (pt.getCarrying().size() == 0 && pt.getNotPicked().size() == 0) {
+				System.out.println(pt.getPlan());
 				return pt;
+			}
 
 		return null;
 	}
