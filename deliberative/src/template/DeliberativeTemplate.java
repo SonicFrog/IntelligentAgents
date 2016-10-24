@@ -87,37 +87,64 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			this.carrying = carrying;
 		}
 
+		private Task taskInCity(City city, TaskSet tasks) {
+			for (Task t : tasks) {
+				if (t.pickupCity.equals(city) && t.deliveryCity.equals(city))
+					return t;
+			}
+
+			return null;
+		}
+
+		private void move(Plan plan, TaskSet newNotPicked, TaskSet newCarrying, City city) {
+			for (City c: this.current.pathTo(city)) {
+				plan.appendMove(c);
+
+				newNotPicked.stream()
+					.filter(t -> t.pickupCity.equals(c))
+					.forEach(t -> {
+						plan.appendPickup(t);
+						newNotPicked.remove(t);
+						newCarrying.remove(t);
+					});
+
+				newCarrying.stream()
+					.filter(t -> t.deliveryCity.equals(c))
+					.forEach(t -> {
+						plan.appendDelivery(t);
+						newCarrying.remove(t);
+					});
+			}
+		}
+
 		public PlanTask moveAndPickupTask(Task task) {
 			assert notPicked.contains(task);
 
 			Plan plan = this.getPlan();
-
-			for (City city : this.current.pathTo(task.pickupCity))
-				plan.appendMove(city);
-			plan.appendPickup(task);
-
 			TaskSet newNotPicked = this.getNotPicked();
 			TaskSet newCarrying = this.getCarrying();
+
+			move(plan, newNotPicked, newCarrying, task.pickupCity);
+			plan.appendPickup(task);
 
 			newNotPicked.remove(task);
 			newCarrying.add(task);
 
-			return new PlanTask(this.current, plan, newNotPicked, newCarrying);
+			return new PlanTask(task.pickupCity, plan, newNotPicked, newCarrying);
 		}
 
 		public PlanTask moveAndDeliverTask(Task task) {
 			assert carrying.contains(task);
 
 			Plan plan = this.getPlan();
+			TaskSet newCarrying = this.getCarrying();
 
-			for (City city : this.current.pathTo(task.deliveryCity))
-				plan.appendMove(city);
+			move(plan, this.notPicked, newCarrying, task.deliveryCity);
 			plan.appendDelivery(task);
 
-			TaskSet newCarrying = this.getCarrying();
 			newCarrying.remove(task);
 
-			return new PlanTask(this.current, plan, this.notPicked, newCarrying);
+			return new PlanTask(task.deliveryCity, plan, this.notPicked, newCarrying);
 		}
 
 		public boolean equals(Object o) {
@@ -183,6 +210,14 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		return Stream.concat(notPicked, carrying);
 	}
 
+	private PlanTask getFinished(Set<PlanTask> planTasks) {
+		for (PlanTask pt : planTasks)
+			if (pt.getCarrying().size() == 0 && pt.getNotPicked().size() == 0)
+				return pt;
+
+		return null;
+	}
+
 	private Plan bfs(Vehicle vehicle, TaskSet tasks) {
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
@@ -199,6 +234,10 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 			changed = !planTasks.equals(nextPlanTasks);
 			planTasks = nextPlanTasks;
+
+			PlanTask ts = getFinished(planTasks);
+			if (ts != null)
+				return ts.getPlan();
 
 			System.out.println(planTasks.size());
 		}
