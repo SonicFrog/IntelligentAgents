@@ -13,6 +13,7 @@ import logist.topology.Topology;
 import logist.topology.Topology.City;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,6 +25,8 @@ import java.util.stream.Stream;
 public class DeliberativeTemplate implements DeliberativeBehavior {
 
 	enum Algorithm { BFS, ASTAR }
+
+	private static int QUEUE_SIZE = 20000;
 
 	/* Environment */
 	Topology topology;
@@ -60,7 +63,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		switch (algorithm) {
 		case ASTAR:
 			// ...
-			plan = naivePlan(vehicle, tasks);
+			plan = astar(vehicle, tasks);
 			break;
 		case BFS:
 			// ...
@@ -185,6 +188,16 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		public TaskSet getCarrying() {
 			return TaskSet.copyOf(this.carrying);
 		}
+
+		public double estimateCost() {
+			double distToPick = this.notPicked.stream()
+				.map(t -> this.current.distanceTo(t.pickupCity))
+				.max(Double::compare).orElse(0.0);
+			double distToDeliver = this.carrying.stream()
+				.map(t -> this.current.distanceTo(t.deliveryCity))
+				.max(Double::compare).orElse(0.0);
+			return distToPick + distToDeliver;
+		}
 	}
 
 	private boolean canCarry(Vehicle vehicle, TaskSet carrying, Task toAdd) {
@@ -225,14 +238,10 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		Set<PlanTask> planTasks = new HashSet<>();
 		planTasks.add(planTask);
 
-		boolean changed = true;
-		while (changed) {
-			Set<PlanTask> nextPlanTasks = planTasks.stream().parallel()
+		while (true) {
+			planTasks = planTasks.stream().parallel()
 				.flatMap(pt -> getNextPlanTasks(vehicle, pt))
 				.collect(Collectors.toSet());
-
-			changed = !planTasks.equals(nextPlanTasks);
-			planTasks = nextPlanTasks;
 
 			PlanTask ts = getFinished(planTasks);
 			if (ts != null)
@@ -240,11 +249,28 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 			System.out.println(planTasks.size());
 		}
+	}
 
-		return planTasks.stream()
-			.map(pt -> pt.getPlan())
-			.min(Comparator.comparing(p -> p.totalDistance()))
-			.get();
+	private Plan astar(Vehicle vehicle, TaskSet tasks) {
+		City current = vehicle.getCurrentCity();
+		Plan plan = new Plan(current);
+
+		PlanTask planTask = new PlanTask(current, plan, tasks, TaskSet.noneOf(tasks));
+		PriorityQueue<PlanTask> planTasks = new PriorityQueue<>(QUEUE_SIZE,
+				(a, b) -> (int) (b.estimateCost() - a.estimateCost()));
+		planTasks.add(planTask);
+
+		while (true) {
+			PlanTask pt = planTasks.poll();
+			Set<PlanTask> succs = getNextPlanTasks(vehicle, pt).collect(Collectors.toSet());
+			planTasks.addAll(succs);
+
+			PlanTask ts = getFinished(succs);
+			if (ts != null)
+				return ts.getPlan();
+
+			System.out.println(planTasks.size());
+		}
 	}
 
 	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
