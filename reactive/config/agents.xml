@@ -7,7 +7,7 @@
     <agent name="reactive-rla">
         <set class-path="bin/"/>
         <set class-name="ch.epfl.ia.ReactiveRLA"/>
-        <set discount-factor=".85"/>
+        <set discount-factor=".99"/>
     </agent>
 
     <agent name="reactive-rla20">
