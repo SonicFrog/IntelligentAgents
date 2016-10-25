@@ -97,17 +97,39 @@ a goal state is underestimated.
 
 \subsection{Experiment 1: BFS and A* Comparison}
 % Compare the two algorithms in terms of: optimality, efficiency, limitations %
-% Report the number of tasks for which you can build a plan in less than one minute %
+% Report the number of tasks for which you can build a plan in less
+% than one minute %
+The A* algorithm can handle plans for up to 10 tasks in less than one
+minute.
+
+The BFS algorithm can handle plans for up to 8 tasks in less than a
+minute.
 
 \subsubsection{Setting}
-% Describe the settings of your experiment: topology, task configuration, etc. %
+% Describe the settings of your experiment: topology, task
+% configuration, etc. %
+For these experiments we used the Switzerland topology with 11
+(respectively 8) tasks for the A* algorithm (respectively the BFS
+algorithm).
 
 \subsubsection{Observations}
-% Describe the experimental results and the conclusions you inferred from these results %
+% Describe the experimental results and the conclusions you inferred
+% from these results %
+
+We noticed that A* is significantly more efficient that BFS due to the
+fact that A* does not explore branches that are not promising because
+it uses the heuristic to estimate further cost of each state. Apart
+from this both algorithm have a very close reward per kilometer, this
+would suggest we use A* instead of BFS in real world cases because it
+can handle a lot more tasks than BFS.
 
 
 \subsection{Experiment 2: Multi-agent Experiments}
 % Observations in multi-agent experiments %
+
+We notice that the initial startup time is much higher since each
+agent must compute its plan independently so we have a 2x or 3x longer
+startup time in this case
 
 \subsubsection{Setting}
 % Describe the settings of your experiment: topology, task configuration, etc. %
