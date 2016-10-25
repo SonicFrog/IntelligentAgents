@@ -55,8 +55,6 @@ These transitions are repeated until there are no more tasks in either
 the waiting to be picked up set or the carrying set at which point we
 have reached a goal state.
 
-When we move from city to city, we try to deliver any packet on the way.
-
 \section{Implementation}
 
 \subsection{BFS}
@@ -99,22 +97,54 @@ a goal state is underestimated.
 
 \subsection{Experiment 1: BFS and A* Comparison}
 % Compare the two algorithms in terms of: optimality, efficiency, limitations %
-% Report the number of tasks for which you can build a plan in less than one minute %
+% Report the number of tasks for which you can build a plan in less
+% than one minute %
+The A* algorithm can handle plans for up to 10 tasks in less than one
+minute.
+
+The BFS algorithm can handle plans for up to 8 tasks in less than a
+minute.
 
 \subsubsection{Setting}
-% Describe the settings of your experiment: topology, task configuration, etc. %
+% Describe the settings of your experiment: topology, task
+% configuration, etc. %
+For these experiments we used the Switzerland topology with 11
+(respectively 8) tasks for the A* algorithm (respectively the BFS
+algorithm).
 
 \subsubsection{Observations}
-% Describe the experimental results and the conclusions you inferred from these results %
+% Describe the experimental results and the conclusions you inferred
+% from these results %
 
+We noticed that A* is significantly more efficient that BFS due to the
+fact that A* does not explore branches that are not promising because
+it uses the heuristic to estimate further cost of each state. Apart
+from this both algorithm have a very close reward per kilometer, this
+would suggest we use A* instead of BFS in real world cases because it
+can handle a lot more tasks than BFS.
 
 \subsection{Experiment 2: Multi-agent Experiments}
 % Observations in multi-agent experiments %
 
+We notice that the initial startup time is much higher since each
+agent must compute its plan independently so we have a 2x or 3x longer
+startup time in this case
+
 \subsubsection{Setting}
 % Describe the settings of your experiment: topology, task configuration, etc. %
 
+The topology used is that of Switzerland and the number of tasks was
+6. We used three agents with the default task distribution
+provided. Each agent used the astar algorithm for plan computation.
+
 \subsubsection{Observations}
 % Describe the experimental results and the conclusions you inferred from these results %
+
+We noticed that the overhead required by the plan cancellation was
+minimal since when the first cancellation occurs some tasks are
+already delivered, this means the plan recomputation takes much less
+time than at the start. The only drawback is that the reward per
+kilometer is slightly lower than the case where we have only agent
+because of the modification to the topology during the simulation.
 
 \end{document}
