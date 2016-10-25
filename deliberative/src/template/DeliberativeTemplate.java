@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class DeliberativeTemplate implements DeliberativeBehavior {
 
-	enum Algorithm { BFS, ASTAR }
+        enum Algorithm { BFS, ASTAR, NAIVE }
 
 	private static int QUEUE_SIZE = 20000;
 
@@ -69,6 +69,9 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 			// ...
 			plan = bfs(vehicle, tasks);
 			break;
+                case NAIVE:
+                        plan = naivePlan(vehicle, tasks);
+                        break;
 		default:
 			throw new AssertionError("Should not happen.");
 		}
