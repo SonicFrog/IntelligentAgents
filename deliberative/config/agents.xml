@@ -2,19 +2,30 @@
 
 <agents>
 	<!-- A list of agents and their behavior classes -->
-	
+
+        <agent name="deliberative-main">
+            <set class-path="bin/" />
+            <set class-name="template.DeliberativeTemplate" />
+            <set algorithm="ASTAR" />
+        </agent>
+
 	<!-- #### DELIBERATIVE AGENTS ### -->
 	<agent name="deliberative-bfs">
 		<set class-path="bin/"/>
 		<set class-name="template.DeliberativeTemplate"/>
 		<set algorithm="BFS"/>
 	</agent>
-	
+
+        <agent name="deliberative-naive">
+		<set class-path="bin/"/>
+		<set class-name="template.DeliberativeTemplate"/>
+		<set algorithm="NAIVE"/>
+	</agent>
+
 	<!-- #### DELIBERATIVE AGENTS ### -->
 	<agent name="deliberative-astar">
 		<set class-path="bin/"/>
 		<set class-name="template.DeliberativeTemplate"/>
 		<set algorithm="ASTAR"/>
 	</agent>
-
 </agents>
