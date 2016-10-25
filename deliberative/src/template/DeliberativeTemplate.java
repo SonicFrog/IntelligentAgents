@@ -38,6 +38,7 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 	/* the planning class */
 	Algorithm algorithm;
+	TaskSet carried;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
@@ -59,15 +60,18 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 	public Plan plan(Vehicle vehicle, TaskSet tasks) {
 		Plan plan;
 
+		if (this.carried == null)
+			this.carried = TaskSet.noneOf(tasks);
+
 		// Compute the plan with the selected algorithm.
 		switch (algorithm) {
 		case ASTAR:
 			// ...
-			plan = astar(vehicle, tasks);
+			plan = astar(vehicle, tasks, carried);
 			break;
 		case BFS:
 			// ...
-			plan = bfs(vehicle, tasks);
+			plan = bfs(vehicle, tasks, carried);
 			break;
                 case NAIVE:
                         plan = naivePlan(vehicle, tasks);
@@ -233,11 +237,11 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		return null;
 	}
 
-	private Plan bfs(Vehicle vehicle, TaskSet tasks) {
+	private Plan bfs(Vehicle vehicle, TaskSet tasks, TaskSet carried) {
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
 
-		PlanTask planTask = new PlanTask(current, plan, tasks, TaskSet.noneOf(tasks));
+		PlanTask planTask = new PlanTask(current, plan, tasks, carried);
 		Set<PlanTask> planTasks = new HashSet<>();
 		planTasks.add(planTask);
 
@@ -254,11 +258,11 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 		}
 	}
 
-	private Plan astar(Vehicle vehicle, TaskSet tasks) {
+	private Plan astar(Vehicle vehicle, TaskSet tasks, TaskSet carried) {
 		City current = vehicle.getCurrentCity();
 		Plan plan = new Plan(current);
 
-		PlanTask planTask = new PlanTask(current, plan, tasks, TaskSet.noneOf(tasks));
+		PlanTask planTask = new PlanTask(current, plan, tasks, carried);
 		PriorityQueue<PlanTask> planTasks = new PriorityQueue<>(QUEUE_SIZE,
 				(a, b) -> (int) (b.estimateCost() - a.estimateCost()));
 		planTasks.add(planTask);
@@ -301,11 +305,6 @@ public class DeliberativeTemplate implements DeliberativeBehavior {
 
 	@Override
 	public void planCancelled(TaskSet carriedTasks) {
-
-		if (!carriedTasks.isEmpty()) {
-			// This cannot happen for this simple agent, but typically
-			// you will need to consider the carriedTasks when the next
-			// plan is computed.
-		}
+		this.carried = carriedTasks;
 	}
 }
