@@ -1,5 +1,3 @@
 include_rules
 
-# TODO python weird acces, rewrite in C
-preload ../../..
 run &(javac_files) $(TUP_CWD)

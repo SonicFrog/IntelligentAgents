@@ -1,7 +1,14 @@
 .gitignore
 
+PREFIX = bouvier-rousset-
+
 &javac_files = javac_files
 &logist.jar = logist/logist.jar
 
+zip_files := doc/*.pdf
+zip_files += src/template/*.java src/template/*.class
+zip_files += config/*.xml config/topology/*.xml
+
 !latex = |> pdflatex %f; rm %B.aux %B.log |> %B.pdf
 !javac = |> javac -Xlint:unchecked -cp &(logist.jar) %f |>
+!zip = |> zip -r %o %f |>

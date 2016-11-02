@@ -1,31 +1,29 @@
-#!/usr/bin/env python3
+#!/bin/sh
 
-from pathlib import Path
-import re
-import sys
+set -eu
 
-BASE_DIR, = sys.argv[1:]
-BASE_DIR = Path(BASE_DIR)
+BASE_DIR="${1}"
 
-class_re = re.compile('^\\s*(public|private|)\\s+(class|enum)\\s+([a-zA-Z]+)\\s')
-def classes_in_file(f):
-    for l in f:
-        match = class_re.match(l)
-        if match:
-            yield match.group(3)
+classes_in_file() {
+	local f="${1}"
 
-java_files = set(BASE_DIR.glob('*.java'))
-generated = set()
+	pcregrep -o3 '^\s*(public|private|)\s+(class|enum)\s+([a-zA-Z]+)\s' "${f}"
+}
 
-for p in java_files:
-    with p.open() as f:
-        classes = classes_in_file(f)
-        main_class = next(classes)
-        generated.add('{}.class'.format(main_class))
-        classes = set(classes)
-        if classes:
-            generated.add('{}$1.class'.format(main_class))
-        for c in classes:
-            generated.add('{}${}.class'.format(main_class, c))
+generated() {
+	for f in "${BASE_DIR}"/*.java
+	do
+		main_class="$(classes_in_file "${f}" | head -n 1)"
+		echo "${main_class}.class"
 
-print(': {} |> !javac |> {}'.format(' '.join({str(p) for p in java_files}), ' '.join(generated)))
+		if [ "$(classes_in_file "${f}" | wc -l)" -gt 1 ]
+		then
+			echo "${main_class}\$1.class"
+		fi
+
+		classes_in_file "${f}" | tail -n +2 | sed "s|^|${main_class}\$|; s|\$|.class|"
+	done
+}
+
+inputs="$(echo "${BASE_DIR}"/*.java | xargs -n 1 basename | xargs echo)"
+echo ": ${inputs} |> !javac |> $(generated | xargs echo)"
