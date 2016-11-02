@@ -1,3 +1,7 @@
 .gitignore
 
+&javac_files = javac_files
+&logist.jar = logist/logist.jar
+
 !latex = |> pdflatex %f; rm %B.aux %B.log |> %B.pdf
+!javac = |> javac -Xlint:unchecked -cp &(logist.jar) %f |>

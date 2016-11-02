@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+from pathlib import Path
+import re
+import sys
+
+BASE_DIR, = sys.argv[1:]
+BASE_DIR = Path(BASE_DIR)
+
+class_re = re.compile('^\\s*(public|private|)\\s+(class|enum)\\s+([a-zA-Z]+)\\s')
+def classes_in_file(f):
+    for l in f:
+        match = class_re.match(l)
+        if match:
+            yield match.group(3)
+
+java_files = set(BASE_DIR.glob('*.java'))
+generated = set()
+
+for p in java_files:
+    with p.open() as f:
+        classes = classes_in_file(f)
+        main_class = next(classes)
+        generated.add('{}.class'.format(main_class))
+        classes = set(classes)
+        if classes:
+            generated.add('{}$1.class'.format(main_class))
+        for c in classes:
+            generated.add('{}${}.class'.format(main_class, c))
+
+print(': {} |> !javac |> {}'.format(' '.join({str(p) for p in java_files}), ' '.join(generated)))
