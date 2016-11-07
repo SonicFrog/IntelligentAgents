@@ -7,7 +7,7 @@ BASE_DIR="${1}"
 classes_in_file() {
 	local f="${1}"
 
-	pcregrep -o3 '^\s*(public|private|)\s+(class|enum)\s+([a-zA-Z]+)\s' "${f}"
+	pcregrep -o3 '^\s*(public|private|)\s+(class|enum)\s+([a-zA-Z]+)(<([a-zA-Z],\s*)*[a-zA-Z]>)?\s' "${f}"
 }
 
 generated() {
