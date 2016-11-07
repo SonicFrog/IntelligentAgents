@@ -10,5 +10,5 @@ zip_files += src/template/*.java src/template/*.class
 zip_files += config/*.xml config/topology/*.xml
 
 !latex = |> pdflatex %f; rm %B.aux %B.log |> %B.pdf
-!javac = |> javac -Xlint:unchecked -cp &(logist.jar) %f |>
+!javac = |> javac -Xdiags:verbose -Xlint:all -Xlint:-path -cp &(logist.jar) %f |>
 !zip = |> zip -r %o %f |>
