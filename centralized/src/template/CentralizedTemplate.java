@@ -3,6 +3,7 @@ package template;
 //the list of imports
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.HashMap;
@@ -10,7 +11,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.Iterator;
 import java.util.stream.Collectors;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.stream.StreamSupport;
+import java.util.stream.Stream;
 import logist.LogistSettings;
 
 import logist.Measures;
@@ -99,6 +107,155 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		}
 
 		return current;
+	}
+
+	private Task nextTask(Map<Vehicle, List<Task>> current, Task prev) {
+		for (List<Task> tasks : current.values()) {
+			boolean next = false;
+			for (Task t : tasks) {
+				if (next)
+					return t;
+				next = t.equals(prev);
+			}
+		}
+
+		return null;
+	}
+
+	private Task nextTask(Map<Vehicle, List<Task>> current, Vehicle v) {
+		List<Task> tasks = current.get(v);
+
+		if (tasks == null || tasks.isEmpty())
+			return null;
+
+		return tasks.get(0);
+	}
+
+	private double dist(Task t, Task next) {
+		return t.deliveryCity.distanceTo(next.pickupCity);
+	}
+
+	private double dist(Vehicle v, Task next) {
+		return 0; // FIXME
+	}
+
+	private double length(Task t) {
+		return t.pathLength();
+	}
+
+	private double cost(Vehicle v) {
+		return v.costPerKm();
+	}
+
+	private Vehicle vehicle(Map<Vehicle, List<Task>> current, Task to_find) {
+		for (Map.Entry<Vehicle, List<Task>> entry : current.entrySet())
+			for (Task t : entry.getValue())
+				if (t.equals(to_find))
+					return entry.getKey();
+
+		return null;
+	}
+
+	private double cost(Map<Vehicle, List<Task>> m) {
+		double res = 0;
+
+		for (Map.Entry<Vehicle, List<Task>> entry : m.entrySet()) {
+			Vehicle v = entry.getKey();
+			List<Task> tasks = entry.getValue();
+
+			res += tasks.stream()
+				.mapToDouble((t -> (dist(t, nextTask(m, t)) + length(nextTask(m, t))) * cost(vehicle(m, t))))
+				.sum();
+			res += (dist(v, nextTask(m, v)) + length(nextTask(m, v))) * cost(v);
+		}
+
+		return res;
+	}
+
+	private Set<Task> getTasks(Map<Vehicle, List<Task>> m) {
+		return m.values().stream().flatMap(t -> t.stream()).collect(Collectors.toSet());
+	}
+
+	private static Random rand = new Random();
+
+	private <T> T pickRandom(Set<T> set) {
+		int pos = rand.nextInt() % set.size();
+
+		Iterator<T> iter = set.iterator();
+		for (int i = 0; i < pos; ++i)
+			iter.next();
+
+		return iter.next();
+	}
+
+	private Set<Task> pickRandom(Collection<Task> tasks, int size) {
+		Set<Task> to_ret = new HashSet<>();
+
+		Set<Integer> to_select = new HashSet<>();
+		for (int i = 0; i < size; ++i)
+			 to_select.add(rand.nextInt() % tasks.size());
+
+		int i = 0;
+		for (Task t : tasks) {
+			if (to_select.contains(i))
+				to_ret.add(t);
+			++i;
+		}
+
+		return to_ret;
+	}
+
+	private Map<Vehicle, List<Task>> dupMap(Map<Vehicle, List<Task>> m) {
+		Map<Vehicle, List<Task>> new_map = new HashMap<>();
+
+		for (Map.Entry<Vehicle, List<Task>> entry : m.entrySet()) {
+			List<Task> new_tasks = new ArrayList<>();
+			for (Task t : entry.getValue())
+				new_tasks.add(t);
+			new_map.put(entry.getKey(), new_tasks);
+		}
+
+		return new_map;
+	}
+
+	private Map<Vehicle, List<Task>> removeTask(Map<Vehicle, List<Task>> m, Task to_remove) {
+		Map<Vehicle, List<Task>> new_map = new HashMap<>();
+
+		for (Map.Entry<Vehicle, List<Task>> entry : m.entrySet()) {
+			List<Task> new_tasks = new ArrayList<>();
+			for (Task t : entry.getValue()) {
+				if (!t.equals(to_remove))
+					new_tasks.add(t);
+			}
+
+			new_map.put(entry.getKey(), new_tasks);
+		}
+
+		return new_map;
+	}
+
+	private Map<Vehicle, List<Task>> moveTask(Map<Vehicle, List<Task>> m) {
+		Set<Task> tasks = getTasks(m);
+		Task t = pickRandom(tasks);
+
+		m = removeTask(m, t);
+		Vehicle v = pickRandom(m.keySet());
+		m.get(v).add(t);
+
+		return m;
+	}
+
+	private Map<Vehicle, List<Task>> swapTask(Map<Vehicle, List<Task>> m) {
+		m = dupMap(m);
+
+		Vehicle v = pickRandom(m.keySet());
+		List<Task> tasks = m.get(v);
+
+		List<Task> choices = new ArrayList<>(pickRandom(tasks, 2));
+
+		Collections.swap(tasks, tasks.indexOf(choices.get(0)), tasks.indexOf(choices.get(1)));
+
+		return m;
 	}
 
 	private Map<Vehicle, List<Task>> findBest(Set<Vehicle> vehicles, Set<Task> tasks) {
