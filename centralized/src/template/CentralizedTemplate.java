@@ -291,10 +291,21 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	}
 
 	private boolean isConsistant(Map<Vehicle, List<TaskAction>> m) {
-		for (List<TaskAction> actions : m.values()) {
+		for (Map.Entry<Vehicle, List<TaskAction>> entry : m.entrySet()) {
 
+			Vehicle v = entry.getKey();
+			List<TaskAction> actions = entry.getValue();
+
+			int current_size = 0;
 			for (int i = 0; i < actions.size(); ++i) {
 				TaskAction task_action = actions.get(i);
+
+				if (task_action.need_to_pickup)
+					current_size += task_action.task.weight;
+				else
+					current_size -= task_action.task.weight;
+				if (current_size > v.capacity())
+					return false;
 
 				if (!actions.contains(task_action.invert()))
 					return false;
