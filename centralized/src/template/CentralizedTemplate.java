@@ -62,6 +62,22 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		public TaskAction invert() {
 			return new TaskAction(this.task, !this.need_to_pickup);
 		}
+
+		public boolean equals(Object o) {
+			if (o == this)
+				return true;
+
+			if (!(o instanceof TaskAction))
+				return false;
+
+			TaskAction that = (TaskAction) o;
+
+			return this.task.equals(that.task) && this.need_to_pickup == that.need_to_pickup;
+		}
+
+		public int hashCode() {
+			return this.task.hashCode() + (this.need_to_pickup ? 1 : 0);
+		}
 	}
 
 	@Override
@@ -99,10 +115,6 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return vehicles.stream().max((a, b) -> a.capacity() - b.capacity()).get();
 	}
 
-	private int getSizeTask(Collection<TaskAction> tasks) {
-		return tasks.stream().map(t -> t.task).distinct().collect(Collectors.summingInt(t -> t.weight));
-	}
-
 	private void printMapVehicleListTask(Map<Vehicle, List<TaskAction>> map) {
 		for (Map.Entry<Vehicle, List<TaskAction>> entry : map.entrySet()) {
 			System.out.println(entry.getKey());
@@ -114,25 +126,22 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	private Map<Vehicle, List<TaskAction>> fillVehicules(Set<Vehicle> vehicles, Set<Task> tasks) {
 		Map<Vehicle, List<TaskAction>> current = new HashMap<>();
 
-		while (!vehicles.isEmpty() && !tasks.isEmpty()) {
-			Vehicle current_vehicle = getBiggestVehicule(vehicles);
-			List<TaskAction> current_tasks = new ArrayList<>();
-
-			while (current_vehicle.capacity() > getSizeTask(current_tasks)) {
-				Task t = tasks.iterator().next();
-				tasks.remove(t);
-
-				current_tasks.add(new TaskAction(t, true));
-				current_tasks.add(new TaskAction(t, false));
-			}
-
-			current.put(current_vehicle, current_tasks);
-
-			vehicles.remove(current_vehicle);
-		}
-
 		for (Vehicle v : vehicles)
 			current.put(v, new ArrayList<>());
+
+		while (!tasks.isEmpty()) {
+			for (Vehicle v : vehicles) {
+				if (tasks.isEmpty())
+					break;
+				Task t = tasks.iterator().next();
+				current.get(v).add(new TaskAction(t, true));
+				current.get(v).add(new TaskAction(t, false));
+				tasks.remove(t);
+			}
+		}
+
+		assert tasks.isEmpty();
+		assert isConsistant(current);
 
 		return current;
 	}
@@ -271,7 +280,9 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return new_map;
 	}
 
-	private Map<Vehicle, List<TaskAction>> moveTask(Map<Vehicle, List<TaskAction>> m) {
+	private Map<Vehicle, List<TaskAction>> moveTask(Map<Vehicle, List<TaskAction>> map) {
+		Map<Vehicle, List<TaskAction>> m = dupMap(map);
+
 		Set<TaskAction> tasks = getTasks(m);
 		TaskAction t = pickRandom(tasks);
 
@@ -286,6 +297,9 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		m.get(v).add(pos + 1, new TaskAction(t.task, false));
 
 		assert getTasks(m).size() == tasks.size();
+
+		if (!isConsistant(m))
+			return map;
 
 		return m;
 	}
@@ -312,9 +326,6 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
 				if (task_action.need_to_pickup &&
 					actions.indexOf(task_action.invert()) < i)
-					return false;
-				if (!task_action.need_to_pickup &&
-					actions.indexOf(task_action.invert()) > i)
 					return false;
 			}
 		}
