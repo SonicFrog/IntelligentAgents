@@ -8,7 +8,7 @@
 
 % Put your group number and names in the author field %
 \title{\bf Excercise 4\\ Implementing a centralized agent}
-\author{Group \textnumero 17 : Ogier Bouvier, Valérian Rousset}
+\author{Group \textnumero 17 : Bouvier Ogier, Rousset Valérian}
 
 
 % N.B.: The report should not be longer than 3 pages %
@@ -22,36 +22,101 @@
 \subsection{Variables}
 % Describe the variables used in your solution representation %
 
+Our solution representation consist of a sequence of pickup and delivery
+action for each vehicle in the simulation. Our program then handles
+generating a complete move, pickup and delivery plan from these pickup
+and delivery action for each vehicle. If the sequence of pickup and
+delivery action sequence satisfies the constraints this always results
+in a valid plan for the TaskSet.
+
 \subsection{Constraints}
 % Describe the constraints in your solution representation %
+Our constraints are pretty simple. There are only two ways one
+solution is invalid. One case is when a task is delivered by a vehicle
+before this vehicle has picked the task up and the other is when a
+vehicle carries more than its carrying weight at one point during its
+plan.
+So when applying a transformation to our current solution we check for
+both of these condition and if one is not satisfied we reject the
+resulting solution as invalid.
+
 
 \subsection{Objective function}
 % Describe the function that you optimize %
-
+The objective function is a sum of the total cost of the plan for each
+vehicle in the simulation. We compute the total distance of the plan
+for each vehicle and we multiply it by the cost per kilometer of the
+vehicle associated with the plan. This is a very precise heuristic
+since it's the actual cost associated with the solution instead of an
+approximation.
 
 \section{Stochastic optimization}
 
 \subsection{Initial solution}
 % Describe how you generate the initial solution %
+The generation of the initial solution is pretty simple. We just
+assign every task to the vehicle with the biggest carrying
+capacity until we have reached its maximum carrying capacity. We then
+spill the tasks to the second vehicle with biggest carrying capacity
+and so on. This generate very quickly an initial solution that has a
+reasonable cost.
 
 \subsection{Generating neighbours}
 % Describe how you generate neighbors %
 
+When generating neighbors we have two possible transformations from
+our current solution. We can either swap two actions for the same
+vehicle or swap a task from one vehicle to another. Applying either
+one of this transformation at random (randomly selecting two vehicle
+and randomly selecting a task to transfer between the two or randomly
+selecting two action to swap for a random vehicle) for a random
+vehicle gives a neighboring state for which we compute the cost and
+retain it if the cost is lower than our current solution.
+
+
 \subsection{Stochastic optimization algorithm}
 % Describe your stochastic optimization algorithm %
-
+Working from our initial solution we try to randomly apply the two
+possible transformation to our current solution and retain the
+resulting solution if it has a lower cost than our current
+solution. We continue applying transformations and keeping the better
+solution until we reach the limit of iteration or the limit of time
+allocated for the algorithm.
 
 \section{Results}
 
 \subsection{Experiment 1: Model parameters}
-% if your model has parameters, perform an experiment and analyze the results for different parameter values %
 
 \subsubsection{Setting}
 % Describe the settings of your experiment: topology, task configuration, number of tasks, number of vehicles, etc. %
 % and the parameters you are analyzing %
+The only parameters which are not related to the topology, the number
+of tasks and the number of vehicles of the simulation are the maximum
+iteration count and the maximum amount of time for the plan
+computation. We will now try to see if giving more time and more
+iteration for our plan computation yields a better solution.
+
+Number of tasks 30
+Number of vehicles 4
+Topology: England
 
 \subsubsection{Observations}
 % Describe the experimental results and the conclusions you inferred from these results %
+We first try with 100'000 iterations:
+
+The total plan cost for this number of iterations is ~27'000.
+
+We then try with 1.000.000 iterations:
+
+The total plan cost for this number of iterations is ~25'000.
+
+We now try with 10.000.000 iterations:
+
+The total plan cost for this number of iterations is ~26'000.
+
+We can then conclude that 100'000 iterations seem to be sufficient
+to find an optimal solution since multiplying the number of iteration
+by 10 from this point yields an only slightly better solution!
 
 \subsection{Experiment 2: Different configurations}
 % Run simulations for different configurations of the environment (i.e. different tasks and number of vehicles) %
@@ -59,9 +124,26 @@
 \subsubsection{Setting}
 % Describe the settings of your experiment: topology, task configuration, number of tasks, number of vehicles, etc. %
 
+For this experiment we used 100'000 iterations, a number of task of 20
+and 5 vehicles.
+
+In this configuration the first vehicle performs almost all the
+tasks while two of the vehicles have no task assigned! The total cost
+of the plan is ~18'000.
+
+For the next experiment we used 100'000 iterations, a number of task of
+40 and 4 vehicles. In that case the first vehicle performs the
+majority of the task and the total cost plan is ~28'000.
+
 \subsubsection{Observations}
 % Describe the experimental results and the conclusions you inferred from these results %
 % Reflect on the fairness of the optimal plans. Observe that optimality requires some vehicles to do more work than others. %
 % How does the complexity of your algorithm depend on the number of vehicles and various sizes of the task set? %
+
+We notice that in both cases there is one vehicle that performs a lot
+more tasks than the others (almost more than the others
+combined!). The complexity  of the algorithm is exponential in the
+number of vehicles and tasks since every added task and every added
+vehicle yield a whole new solution space to explore!
 
 \end{document}
