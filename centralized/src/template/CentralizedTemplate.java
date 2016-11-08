@@ -50,6 +50,20 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	private long timeout_plan;
 	private long time_start;
 
+	private class TaskAction {
+		public Task task;
+		public boolean need_to_pickup;
+
+		public TaskAction(Task task, boolean need_to_pickup) {
+			this.task = task;
+			this.need_to_pickup = need_to_pickup;
+		}
+
+		public TaskAction invert() {
+			return new TaskAction(this.task, !this.need_to_pickup);
+		}
+	}
+
 	@Override
 	public void setup(Topology topology, TaskDistribution distribution,
 			Agent agent) {
@@ -85,30 +99,31 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return vehicles.stream().max((a, b) -> a.capacity() - b.capacity()).get();
 	}
 
-	private int getSizeTask(Collection<Task> tasks) {
-		return tasks.stream().collect(Collectors.summingInt(t -> t.weight));
+	private int getSizeTask(Collection<TaskAction> tasks) {
+		return tasks.stream().map(t -> t.task).distinct().collect(Collectors.summingInt(t -> t.weight));
 	}
 
-	private void printMapVehicleListTask(Map<Vehicle, List<Task>> map) {
-		for (Map.Entry<Vehicle, List<Task>> entry : map.entrySet()) {
+	private void printMapVehicleListTask(Map<Vehicle, List<TaskAction>> map) {
+		for (Map.Entry<Vehicle, List<TaskAction>> entry : map.entrySet()) {
 			System.out.println(entry.getKey());
-			for (Task t : entry.getValue())
-				System.out.println("\t" + t);
+			for (TaskAction t : entry.getValue())
+				System.out.println("\t" + t.need_to_pickup + "\t" + t.task);
 		}
 	}
 
-	private Map<Vehicle, List<Task>> fillVehicules(Set<Vehicle> vehicles, Set<Task> tasks) {
-		Map<Vehicle, List<Task>> current = new HashMap<>();
+	private Map<Vehicle, List<TaskAction>> fillVehicules(Set<Vehicle> vehicles, Set<Task> tasks) {
+		Map<Vehicle, List<TaskAction>> current = new HashMap<>();
 
 		while (!vehicles.isEmpty() && !tasks.isEmpty()) {
 			Vehicle current_vehicle = getBiggestVehicule(vehicles);
-			List<Task> current_tasks = new ArrayList<>();
+			List<TaskAction> current_tasks = new ArrayList<>();
 
 			while (current_vehicle.capacity() > getSizeTask(current_tasks)) {
 				Task t = tasks.iterator().next();
 				tasks.remove(t);
 
-				current_tasks.add(t);
+				current_tasks.add(new TaskAction(t, true));
+				current_tasks.add(new TaskAction(t, false));
 			}
 
 			current.put(current_vehicle, current_tasks);
@@ -122,10 +137,10 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return current;
 	}
 
-	private Task nextTask(Map<Vehicle, List<Task>> current, Task prev) {
-		for (List<Task> tasks : current.values()) {
+	private TaskAction nextTask(Map<Vehicle, List<TaskAction>> current, TaskAction prev) {
+		for (List<TaskAction> tasks : current.values()) {
 			boolean next = false;
-			for (Task t : tasks) {
+			for (TaskAction t : tasks) {
 				if (next)
 					return t;
 				next = t.equals(prev);
@@ -135,8 +150,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return null;
 	}
 
-	private Task nextTask(Map<Vehicle, List<Task>> current, Vehicle v) {
-		List<Task> tasks = current.get(v);
+	private TaskAction nextTask(Map<Vehicle, List<TaskAction>> current, Vehicle v) {
+		List<TaskAction> tasks = current.get(v);
 
 		if (tasks == null || tasks.isEmpty())
 			return null;
@@ -169,32 +184,28 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return v.costPerKm();
 	}
 
-	private Vehicle vehicle(Map<Vehicle, List<Task>> current, Task to_find) {
-		for (Map.Entry<Vehicle, List<Task>> entry : current.entrySet())
-			for (Task t : entry.getValue())
+	private Vehicle vehicle(Map<Vehicle, List<TaskAction>> current, TaskAction to_find) {
+		for (Map.Entry<Vehicle, List<TaskAction>> entry : current.entrySet())
+			for (TaskAction t : entry.getValue())
 				if (t.equals(to_find))
 					return entry.getKey();
 
 		return null;
 	}
 
-	private double cost(Map<Vehicle, List<Task>> m) {
-		double res = 0;
+	private double cost(Map<Vehicle, List<TaskAction>> m) {
+		double realCost = 0.0;
+		Map<Vehicle, Plan> plans = mapListTaskAsMapPlan(m);
 
-		for (Map.Entry<Vehicle, List<Task>> entry : m.entrySet()) {
-			Vehicle v = entry.getKey();
-			List<Task> tasks = entry.getValue();
-
-			res += tasks.stream()
-				.mapToDouble((t -> (dist(t, nextTask(m, t)) + length(nextTask(m, t))) * cost(vehicle(m, t))))
-				.sum();
-			res += (dist(v, nextTask(m, v)) + length(nextTask(m, v))) * cost(v);
+		for (Vehicle v : m.keySet()) {
+			Plan p = plans.get(v);
+			realCost += p.totalDistance() * v.costPerKm();
 		}
 
-		return res;
+		return realCost;
 	}
 
-	private Set<Task> getTasks(Map<Vehicle, List<Task>> m) {
+	private Set<TaskAction> getTasks(Map<Vehicle, List<TaskAction>> m) {
 		return m.values().stream().flatMap(t -> t.stream()).collect(Collectors.toSet());
 	}
 
@@ -231,12 +242,12 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return to_ret;
 	}
 
-	private Map<Vehicle, List<Task>> dupMap(Map<Vehicle, List<Task>> m) {
-		Map<Vehicle, List<Task>> new_map = new HashMap<>();
+	private Map<Vehicle, List<TaskAction>> dupMap(Map<Vehicle, List<TaskAction>> m) {
+		Map<Vehicle, List<TaskAction>> new_map = new HashMap<>();
 
-		for (Map.Entry<Vehicle, List<Task>> entry : m.entrySet()) {
-			List<Task> new_tasks = new ArrayList<>();
-			for (Task t : entry.getValue())
+		for (Map.Entry<Vehicle, List<TaskAction>> entry : m.entrySet()) {
+			List<TaskAction> new_tasks = new ArrayList<>();
+			for (TaskAction t : entry.getValue())
 				new_tasks.add(t);
 			new_map.put(entry.getKey(), new_tasks);
 		}
@@ -244,13 +255,13 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return new_map;
 	}
 
-	private Map<Vehicle, List<Task>> removeTask(Map<Vehicle, List<Task>> m, Task to_remove) {
-		Map<Vehicle, List<Task>> new_map = new HashMap<>();
+	private Map<Vehicle, List<TaskAction>> removeTask(Map<Vehicle, List<TaskAction>> m, Task to_remove) {
+		Map<Vehicle, List<TaskAction>> new_map = new HashMap<>();
 
-		for (Map.Entry<Vehicle, List<Task>> entry : m.entrySet()) {
-			List<Task> new_tasks = new ArrayList<>();
-			for (Task t : entry.getValue()) {
-				if (!t.equals(to_remove))
+		for (Map.Entry<Vehicle, List<TaskAction>> entry : m.entrySet()) {
+			List<TaskAction> new_tasks = new ArrayList<>();
+			for (TaskAction t : entry.getValue()) {
+				if (!t.task.equals(to_remove))
 					new_tasks.add(t);
 			}
 
@@ -260,46 +271,71 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return new_map;
 	}
 
-	private Map<Vehicle, List<Task>> moveTask(Map<Vehicle, List<Task>> m) {
-		Set<Task> tasks = getTasks(m);
-		Task t = pickRandom(tasks);
+	private Map<Vehicle, List<TaskAction>> moveTask(Map<Vehicle, List<TaskAction>> m) {
+		Set<TaskAction> tasks = getTasks(m);
+		TaskAction t = pickRandom(tasks);
 
-		m = removeTask(m, t);
+		m = removeTask(m, t.task);
 		Vehicle v = pickRandom(m.keySet());
 		int pos;
 		if (!m.get(v).isEmpty())
 			pos = Math.abs(rand.nextInt()) % m.get(v).size();
 		else
 			pos = 0;
-		m.get(v).add(pos, t);
+		m.get(v).add(pos, new TaskAction(t.task, true));
+		m.get(v).add(pos + 1, new TaskAction(t.task, false));
 
 		assert getTasks(m).size() == tasks.size();
 
 		return m;
 	}
 
-	private Map<Vehicle, List<Task>> swapTask(Map<Vehicle, List<Task>> map) {
-		Map<Vehicle, List<Task>> m = dupMap(map);
+	private boolean isConsistant(Map<Vehicle, List<TaskAction>> m) {
+		for (List<TaskAction> actions : m.values()) {
+
+			for (int i = 0; i < actions.size(); ++i) {
+				TaskAction task_action = actions.get(i);
+
+				if (!actions.contains(task_action.invert()))
+					return false;
+
+				if (task_action.need_to_pickup &&
+					actions.indexOf(task_action.invert()) < i)
+					return false;
+				if (!task_action.need_to_pickup &&
+					actions.indexOf(task_action.invert()) > i)
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	private Map<Vehicle, List<TaskAction>> swapTask(Map<Vehicle, List<TaskAction>> map) {
+		Map<Vehicle, List<TaskAction>> m = dupMap(map);
 
 		Vehicle v = pickRandom(m.keySet());
-		List<Task> tasks = m.get(v);
+		List<TaskAction> tasks = m.get(v);
 
 		if (tasks.size() < 2)
-			return m;
+			return map;
 
-		List<Task> choices = new ArrayList<>(pickRandom(tasks, 2));
+		List<TaskAction> choices = new ArrayList<>(pickRandom(tasks, 2));
 
 		Collections.swap(tasks, tasks.indexOf(choices.get(0)), tasks.indexOf(choices.get(1)));
+
+		if (!isConsistant(m))
+			return map;
 
 		assert getTasks(map).size() == getTasks(m).size();
 
 		return m;
 	}
 
-	private Map<Vehicle, List<Task>> findBest(Set<Vehicle> vehicles, Set<Task> tasks) {
-		Map<Vehicle, List<Task>> best = fillVehicules(vehicles, tasks);
+	private Map<Vehicle, List<TaskAction>> findBest(Set<Vehicle> vehicles, Set<Task> tasks) {
+		Map<Vehicle, List<TaskAction>> best = fillVehicules(vehicles, tasks);
 
-		Set<Function<Map<Vehicle, List<Task>>,Map<Vehicle, List<Task>>>> transformations = new HashSet<>();
+		Set<Function<Map<Vehicle, List<TaskAction>>,Map<Vehicle, List<TaskAction>>>> transformations = new HashSet<>();
 		transformations.add(this::moveTask);
 		transformations.add(this::swapTask);
 
@@ -309,7 +345,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		long step = step_stop - step_start;
 
 		for (int stepWithoutBest = 0; stepWithoutBest < 100000 && step * 100 < getRemainingTime(); ++stepWithoutBest) {
-			Map<Vehicle, List<Task>> m = pickRandom(transformations).apply(best);
+			Map<Vehicle, List<TaskAction>> m = pickRandom(transformations).apply(best);
 
 			if (cost(m) < cost(best)) {
 				best = m;
@@ -320,13 +356,19 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return best;
 	}
 
-	private City movePickupAndMoveDeliver(City current, Plan plan, Task task) {
-		for (City city : current.pathTo(task.pickupCity))
-			plan.appendMove(city);
+	private City movePickupAndMoveDeliver(City current, Plan plan, TaskAction task_action) {
+		Task task = task_action.task;
 
-		plan.appendPickup(task);
+		if (task_action.need_to_pickup) {
+			for (City city : current.pathTo(task.pickupCity))
+				plan.appendMove(city);
 
-		for (City city : task.path())
+			plan.appendPickup(task);
+
+			return task.pickupCity;
+		}
+
+		for (City city : current.pathTo(task.deliveryCity))
 			plan.appendMove(city);
 
 		plan.appendDelivery(task);
@@ -334,15 +376,15 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		return task.deliveryCity;
 	}
 
-	private Map<Vehicle, Plan> mapListTaskAsMapPlan(Map<Vehicle, List<Task>> map) {
+	private Map<Vehicle, Plan> mapListTaskAsMapPlan(Map<Vehicle, List<TaskAction>> map) {
 		Map<Vehicle, Plan> res = new HashMap<>();
 
-		for (Map.Entry<Vehicle, List<Task>> entry : map.entrySet()) {
+		for (Map.Entry<Vehicle, List<TaskAction>> entry : map.entrySet()) {
 			Vehicle v = entry.getKey();
 			City current = v.getCurrentCity();
 			Plan p = new Plan(current);
 
-			for(Task t : entry.getValue())
+			for(TaskAction t : entry.getValue())
 				current = movePickupAndMoveDeliver(current, p, t);
 
 			res.put(v, p);
@@ -355,7 +397,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
 		this.time_start = System.currentTimeMillis();
 
-		Map<Vehicle, List<Task>> best = findBest(new HashSet<>(vehicles), new HashSet<Task>(tasks));
+		Map<Vehicle, List<TaskAction>> best = findBest(new HashSet<>(vehicles), new HashSet<Task>(tasks));
 		Map<Vehicle, Plan> plans_best = mapListTaskAsMapPlan(best);
 
 		List<Plan> plans = new ArrayList<Plan>();
