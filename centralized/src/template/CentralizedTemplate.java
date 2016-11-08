@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.util.stream.StreamSupport;
 import java.util.stream.Stream;
@@ -132,14 +133,20 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	}
 
 	private double dist(Task t, Task next) {
+		if (next == null)
+			return 0;
+
 		return t.deliveryCity.distanceTo(next.pickupCity);
 	}
 
 	private double dist(Vehicle v, Task next) {
-		return 0; // FIXME
+		return v.getCurrentCity().distanceTo(next.pickupCity);
 	}
 
 	private double length(Task t) {
+		if (t == null)
+			return 0;
+
 		return t.pathLength();
 	}
 
@@ -178,29 +185,31 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
 	private static Random rand = new Random();
 
-	private <T> T pickRandom(Set<T> set) {
-		int pos = rand.nextInt() % set.size();
+	private <T> T pickRandom(Collection<T> c) {
+		int pos = rand.nextInt() % c.size();
 
-		Iterator<T> iter = set.iterator();
+		Iterator<T> iter = c.iterator();
 		for (int i = 0; i < pos; ++i)
 			iter.next();
 
 		return iter.next();
 	}
 
-	private Set<Task> pickRandom(Collection<Task> tasks, int size) {
-		Set<Task> to_ret = new HashSet<>();
+	private <T> Set<T> pickRandom(Collection<T> c, int size) {
+		Set<T> to_ret = new HashSet<>();
 
 		Set<Integer> to_select = new HashSet<>();
-		for (int i = 0; i < size; ++i)
-			 to_select.add(rand.nextInt() % tasks.size());
+		while(to_select.size() < size)
+			 to_select.add(Math.abs(rand.nextInt()) % c.size());
+		assert to_select.size() == size;
 
 		int i = 0;
-		for (Task t : tasks) {
+		for (T t : c) {
 			if (to_select.contains(i))
 				to_ret.add(t);
 			++i;
 		}
+		assert to_ret.size() == size;
 
 		return to_ret;
 	}
@@ -242,11 +251,13 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		Vehicle v = pickRandom(m.keySet());
 		m.get(v).add(t);
 
+		assert getTasks(m).size() == tasks.size();
+
 		return m;
 	}
 
-	private Map<Vehicle, List<Task>> swapTask(Map<Vehicle, List<Task>> m) {
-		m = dupMap(m);
+	private Map<Vehicle, List<Task>> swapTask(Map<Vehicle, List<Task>> map) {
+		Map<Vehicle, List<Task>> m = dupMap(map);
 
 		Vehicle v = pickRandom(m.keySet());
 		List<Task> tasks = m.get(v);
@@ -255,13 +266,28 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
 		Collections.swap(tasks, tasks.indexOf(choices.get(0)), tasks.indexOf(choices.get(1)));
 
+		assert getTasks(map).size() == getTasks(m).size();
+
 		return m;
 	}
 
 	private Map<Vehicle, List<Task>> findBest(Set<Vehicle> vehicles, Set<Task> tasks) {
-		Map<Vehicle, List<Task>> current = fillVehicules(vehicles, tasks);
+		Map<Vehicle, List<Task>> best = fillVehicules(vehicles, tasks);
 
-		return current;
+		Set<Function<Map<Vehicle, List<Task>>,Map<Vehicle, List<Task>>>> transformations = new HashSet<>();
+		transformations.add(this::moveTask);
+		transformations.add(this::swapTask);
+
+		for (int stepWithoutBest = 0; stepWithoutBest < 10000; ++stepWithoutBest) {
+			Map<Vehicle, List<Task>> m = pickRandom(transformations).apply(best);
+
+			if (cost(m) < cost(best)) {
+				best = m;
+				stepWithoutBest = 0;
+			}
+		}
+
+		return best;
 	}
 
 	private City movePickupAndMoveDeliver(City current, Plan plan, Task task) {
@@ -309,6 +335,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		long time_end = System.currentTimeMillis();
 		long duration = time_end - time_start;
 		System.out.println("The plan was generated in "+duration+" milliseconds.");
+		System.out.println("The cost is " + cost(best));
 
 		return plans;
 	}
