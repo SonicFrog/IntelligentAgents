@@ -48,6 +48,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	private Agent agent;
 	private long timeout_setup;
 	private long timeout_plan;
+	private long time_start;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution distribution,
@@ -70,6 +71,14 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		this.topology = topology;
 		this.distribution = distribution;
 		this.agent = agent;
+	}
+
+	private long getRemainingTime() {
+		long t = timeout_plan - (System.currentTimeMillis() - this.time_start);
+
+		assert t > 0;
+
+		return t;
 	}
 
 	private Vehicle getBiggestVehicule(Set<Vehicle> vehicles) {
@@ -294,7 +303,12 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		transformations.add(this::moveTask);
 		transformations.add(this::swapTask);
 
-		for (int stepWithoutBest = 0; stepWithoutBest < 100000; ++stepWithoutBest) {
+		long step_start = System.currentTimeMillis();
+		best = pickRandom(transformations).apply(best);
+		long step_stop = System.currentTimeMillis();
+		long step = step_stop - step_start;
+
+		for (int stepWithoutBest = 0; stepWithoutBest < 100000 && step * 100 < getRemainingTime(); ++stepWithoutBest) {
 			Map<Vehicle, List<Task>> m = pickRandom(transformations).apply(best);
 
 			if (cost(m) < cost(best)) {
@@ -339,7 +353,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
-		long time_start = System.currentTimeMillis();
+		this.time_start = System.currentTimeMillis();
 
 		Map<Vehicle, List<Task>> best = findBest(new HashSet<>(vehicles), new HashSet<Task>(tasks));
 		Map<Vehicle, Plan> plans_best = mapListTaskAsMapPlan(best);
