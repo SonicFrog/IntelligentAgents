@@ -4,6 +4,37 @@ set -eu
 
 BASE_DIR="${1}"
 
+enums_in_file() {
+	local file="${1}"
+
+	pcregrep -o2 '^\s*(public|private|)\s+enum\s+([a-zA-Z]+)\s' "${file}"
+}
+
+var_names_of_type() {
+	local file="${1}"
+	local type="${2}"
+
+	pcregrep -o3 "^\s+((public|private|final|static)+\s+)?${type}\s+([a-zA-Z]+)\s*[;=]" "${file}"
+}
+
+enums_vars() {
+	local file="${1}"
+
+	enums_in_file "${file}" | while read type
+	do
+		var_names_of_type "${file}" "${type}"
+	done
+}
+
+switches_on_enum_in_file() {
+	local file="${1}"
+
+	enums_vars "${file}" | while read var
+	do
+		grep -E "^\s*switch\s*[(]\s*${var}[)]" "${file}"
+	done
+}
+
 classes_in_file() {
 	local f="${1}"
 
@@ -16,7 +47,7 @@ generated() {
 		main_class="$(classes_in_file "${f}" | head -n 1)"
 		echo "${main_class}.class"
 
-		if [ "$(classes_in_file "${f}" | wc -l)" -gt 1 ]
+		if [ "$(switches_on_enum_in_file "${f}" | wc -l)" -gt 0 ]
 		then
 			echo "${main_class}\$1.class"
 		fi
