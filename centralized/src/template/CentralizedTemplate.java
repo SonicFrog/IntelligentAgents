@@ -107,6 +107,9 @@ public class CentralizedTemplate implements CentralizedBehavior {
 			vehicles.remove(current_vehicle);
 		}
 
+		for (Vehicle v : vehicles)
+			current.put(v, new ArrayList<>());
+
 		return current;
 	}
 
@@ -140,6 +143,9 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	}
 
 	private double dist(Vehicle v, Task next) {
+		if (next == null)
+			return 0;
+
 		return v.getCurrentCity().distanceTo(next.pickupCity);
 	}
 
@@ -196,6 +202,8 @@ public class CentralizedTemplate implements CentralizedBehavior {
 	}
 
 	private <T> Set<T> pickRandom(Collection<T> c, int size) {
+		assert c.size() >= size;
+
 		Set<T> to_ret = new HashSet<>();
 
 		Set<Integer> to_select = new HashSet<>();
@@ -249,7 +257,12 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
 		m = removeTask(m, t);
 		Vehicle v = pickRandom(m.keySet());
-		m.get(v).add(t);
+		int pos;
+		if (!m.get(v).isEmpty())
+			pos = Math.abs(rand.nextInt()) % m.get(v).size();
+		else
+			pos = 0;
+		m.get(v).add(pos, t);
 
 		assert getTasks(m).size() == tasks.size();
 
@@ -261,6 +274,9 @@ public class CentralizedTemplate implements CentralizedBehavior {
 
 		Vehicle v = pickRandom(m.keySet());
 		List<Task> tasks = m.get(v);
+
+		if (tasks.size() < 2)
+			return m;
 
 		List<Task> choices = new ArrayList<>(pickRandom(tasks, 2));
 
@@ -278,7 +294,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		transformations.add(this::moveTask);
 		transformations.add(this::swapTask);
 
-		for (int stepWithoutBest = 0; stepWithoutBest < 10000; ++stepWithoutBest) {
+		for (int stepWithoutBest = 0; stepWithoutBest < 100000; ++stepWithoutBest) {
 			Map<Vehicle, List<Task>> m = pickRandom(transformations).apply(best);
 
 			if (cost(m) < cost(best)) {
@@ -336,6 +352,7 @@ public class CentralizedTemplate implements CentralizedBehavior {
 		long duration = time_end - time_start;
 		System.out.println("The plan was generated in "+duration+" milliseconds.");
 		System.out.println("The cost is " + cost(best));
+		printMapVehicleListTask(best);
 
 		return plans;
 	}
