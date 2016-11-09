@@ -2,7 +2,9 @@
 
 set -eu
 
-BASE_DIR="${1}"
+readonly BASE_DIR="${1}"
+
+readonly class_name_and_template_re='([a-zA-Z]+)(<([a-zA-Z]+,\s*)*[a-zA-Z]+>)?'
 
 enums_in_file() {
 	local file="${1}"
@@ -35,19 +37,39 @@ switches_on_enum_in_file() {
 	done
 }
 
-classes_in_file() {
-	local f="${1}"
+anonymous_class_in_file() {
+	local file="${1}"
 
-	pcregrep -o3 '^\s*(public|private|)\s+(class|enum)\s+([a-zA-Z]+)(<([a-zA-Z],\s*)*[a-zA-Z]>)?\s' "${f}"
+	grep -E "new\s+[a-zA-Z]${class_name_and_template_re}\s*[(].*\s{" "${file}"
+}
+
+has_expert_construct() {
+	local file="${1}"
+
+	if [ "$(switches_on_enum_in_file "${file}" | wc -l)" -gt 0 ] ||
+		[ "$(anonymous_class_in_file "${file}" | wc -l)" -gt 0 ]
+	then
+		return 0
+	fi
+
+	return 1
+}
+
+classes_in_file() {
+	local file="${1}"
+
+	pcregrep -o5 "^\s*((public|private)\s+)?(abstract\s+)?(class|enum)\s+${class_name_and_template_re}\s" "${file}"
 }
 
 generated() {
+	local f
+
 	for f in "${BASE_DIR}"/*.java
 	do
-		main_class="$(classes_in_file "${f}" | head -n 1)"
+		local main_class="$(classes_in_file "${f}" | head -n 1)"
 		echo "${main_class}.class"
 
-		if [ "$(switches_on_enum_in_file "${f}" | wc -l)" -gt 0 ]
+		if has_expert_construct "${f}"
 		then
 			echo "${main_class}\$1.class"
 		fi
