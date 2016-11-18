@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<agents>
+	<!-- A list of agents and their behavior classes -->
+	
+	<!-- #### AUCTION AGENTS ### -->
+	<agent name="auction-random">
+		<set class-path="src"/>
+		<set class-name="template.AuctionTemplate"/>
+	</agent>
+
+	<agent name="auction-main-17">
+		<set class-path="src"/>
+		<set class-name="template.AuctionTemplate"/>
+	</agent>
+	
+</agents>
