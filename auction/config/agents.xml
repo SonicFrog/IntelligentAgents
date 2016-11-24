@@ -11,7 +11,7 @@
 
 	<agent name="auction-main-17">
 		<set class-path="src"/>
-		<set class-name="template.AuctionTemplate"/>
+		<set class-name="template.AuctionCentralized"/>
 	</agent>
 	
 </agents>
