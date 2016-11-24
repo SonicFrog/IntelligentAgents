@@ -2,8 +2,11 @@ package template;
 
 //the list of imports
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.Map;
 
 import logist.Measures;
 import logist.behavior.AuctionBehavior;
@@ -16,10 +19,12 @@ import logist.task.TaskSet;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
 
+import java.util.stream.Collectors;
+
 /**
  * A very simple auction agent that assigns all tasks to its first vehicle and
  * handles them sequentially.
- * 
+ *
  */
 @SuppressWarnings("unused")
 public class AuctionTemplate implements AuctionBehavior {
@@ -28,8 +33,8 @@ public class AuctionTemplate implements AuctionBehavior {
 	private TaskDistribution distribution;
 	private Agent agent;
 	private Random random;
-	private Vehicle vehicle;
-	private City currentCity;
+	private List<Vehicle> vehicles;
+	private Map<Vehicle, City> currentCities;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution distribution,
@@ -38,73 +43,77 @@ public class AuctionTemplate implements AuctionBehavior {
 		this.topology = topology;
 		this.distribution = distribution;
 		this.agent = agent;
-		this.vehicle = agent.vehicles().get(0);
-		this.currentCity = vehicle.homeCity();
+		this.vehicles = agent.vehicles();
+		this.currentCities = this.vehicles.stream()
+			.collect(Collectors.toMap(v -> v, v -> v.homeCity()));
 
-		long seed = -9019554669489983951L * currentCity.hashCode() * agent.id();
+		long seed = -9019554669489983951L;
 		this.random = new Random(seed);
 	}
 
 	@Override
 	public void auctionResult(Task previous, int winner, Long[] bids) {
-		if (winner == agent.id()) {
-			currentCity = previous.deliveryCity;
-		}
+		if (winner != agent.id())
+			return;
+
+		//currentCity = previous.deliveryCity;
 	}
-	
+
+	private double getCostToTask(Vehicle v, Task t) {
+		return Measures.unitsToKM(
+			currentCities.get(v).distanceUnitsTo(t.pickupCity)
+			+ t.pickupCity.distanceUnitsTo(t.deliveryCity)) * v.costPerKm();
+	}
+
+	private <T> T pickOne(Collection<T> col) {
+		int pos = this.random.nextInt() % col.size();
+
+		int i = 0;
+		for (T e : col) {
+			if (i == pos)
+				return e;
+			++i;
+		}
+
+		return null;
+	}
+
+	private Vehicle getBestVehiculeForTask(Task t) {
+		Set<Vehicle> remains = this.vehicles.stream().filter(v -> t.weight <= v.capacity())
+			.collect(Collectors.toSet());
+
+		if (remains.size() == 1)
+			return pickOne(remains);
+
+		Map<Vehicle, Double> costForNextTask = this.vehicles.stream()
+			.collect(Collectors.toMap(v -> v, v -> getCostToTask(v, t)));
+
+		double min = Double.MAX_VALUE;
+		Vehicle best = null;
+		for (Map.Entry<Vehicle, Double> entry : costForNextTask.entrySet()) {
+			if (entry.getValue() < min) {
+				min = entry.getValue();
+				best = entry.getKey();
+			}
+		}
+
+		return best;
+	}
+
 	@Override
 	public Long askPrice(Task task) {
+		Vehicle v = getBestVehiculeForTask(task);
+		double cost = getCostToTask(v, task);
 
-		if (vehicle.capacity() < task.weight)
-			return null;
+		double bid = cost; // TODO better?
 
-		long distanceTask = task.pickupCity.distanceUnitsTo(task.deliveryCity);
-		long distanceSum = distanceTask
-				+ currentCity.distanceUnitsTo(task.pickupCity);
-		double marginalCost = Measures.unitsToKM(distanceSum
-				* vehicle.costPerKm());
-
-		double ratio = 1.0 + (random.nextDouble() * 0.05 * task.id);
-		double bid = ratio * marginalCost;
-
-		return (long) Math.round(bid);
+		return Math.round(bid);
 	}
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
-		
-//		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
 
-		Plan planVehicle1 = naivePlan(vehicle, tasks);
-
-		List<Plan> plans = new ArrayList<Plan>();
-		plans.add(planVehicle1);
-		while (plans.size() < vehicles.size())
-			plans.add(Plan.EMPTY);
-
-		return plans;
-	}
-
-	private Plan naivePlan(Vehicle vehicle, TaskSet tasks) {
-		City current = vehicle.getCurrentCity();
-		Plan plan = new Plan(current);
-
-		for (Task task : tasks) {
-			// move: current city => pickup location
-			for (City city : current.pathTo(task.pickupCity))
-				plan.appendMove(city);
-
-			plan.appendPickup(task);
-
-			// move: pickup location => delivery location
-			for (City city : task.path())
-				plan.appendMove(city);
-
-			plan.appendDelivery(task);
-
-			// set current city
-			current = task.deliveryCity;
-		}
-		return plan;
+		CentralizedPlan p = new CentralizedPlan();
+		return p.plan(vehicles, tasks);
 	}
 }
