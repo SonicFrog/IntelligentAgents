@@ -322,22 +322,34 @@ public class CentralizedPlan {
 		return m;
 	}
 
-	private Map<Vehicle, List<TaskAction>> findBest(Set<Vehicle> vehicles, Set<Task> tasks) {
-		Map<Vehicle, List<TaskAction>> best = fillVehicules(vehicles, tasks);
+	private Set<Map<Vehicle, List<TaskAction>>> getNextChoices(Set<Vehicle> vehicles, Map<Vehicle, List<TaskAction>> m) {
+		Set<Map<Vehicle, List<TaskAction>>> nextChoices = new HashSet<>();
+		nextChoices.add(m);
 
 		Set<Function<Map<Vehicle, List<TaskAction>>,Map<Vehicle, List<TaskAction>>>> transformations = new HashSet<>();
 		transformations.add(this::moveTask);
 		transformations.add(this::swapTask);
 
-		best = pickRandom(transformations).apply(best);
+		for (int i = vehicles.size() * 10; i > 0; --i)
+			nextChoices.add(pickRandom(transformations).apply(pickRandom(nextChoices)));
 
-		for (int stepWithoutBest = 0; stepWithoutBest < 100000; ++stepWithoutBest) {
-			Map<Vehicle, List<TaskAction>> m = pickRandom(transformations).apply(best);
+		return nextChoices;
+	}
 
-			if (cost(m) < cost(best)) {
-				best = m;
-				stepWithoutBest = 0;
-			}
+	private Map<Vehicle, List<TaskAction>> findBest(Set<Vehicle> vehicles, Set<Task> tasks) {
+		Set<Map<Vehicle, List<TaskAction>>> choices = new HashSet<>();
+		choices.add(fillVehicules(vehicles, tasks));
+
+		Map<Vehicle, List<TaskAction>> best = pickRandom(choices);
+
+		for (int stepWithoutBest = 0; stepWithoutBest < 1000; ++stepWithoutBest) {
+			choices = getNextChoices(vehicles, best);
+
+			for (Map<Vehicle, List<TaskAction>> m : choices)
+				if (cost(m) < cost(best)) {
+					best = m;
+					stepWithoutBest = 0;
+				}
 		}
 
 		return best;
