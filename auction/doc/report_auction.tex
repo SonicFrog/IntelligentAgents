@@ -7,7 +7,7 @@
 
 % put your group number and names in the author field
 \title{\bf Exercise 5: An Auctioning Agent for the Pickup and Delivery Problem}
-\author{Group \textnumero: Student 1, Student 2}
+\author{Group \textnumero 17: Ogier Bouvier, Valérian Rousset}
 
 \begin{document}
 \maketitle
@@ -17,6 +17,17 @@
 % - do you consider the probability distribution of the tasks in defining your strategy? How do you speculate about the future tasks that might be auctions?
 % - how do you use the feedback from the previous auctions to derive information about the other competitors?
 % - how do you combine all the information from the probability distribution of the tasks, the history and the planner to compute bids?
+The basis for the bidding strategy is the same as used in a standard TCP stream
+to find the windows size: additive increase, multiplicative decrease. The idea
+is to have two signals, one meaning that we should decrease the bid (when we
+lose one bet), the other that we should increase the bid (when we win one).
+
+We use this found multiplier to increase or decrease the bid which is mainly the
+cost.
+
+Then, when all the task are allocated, we use a centralized algorithm to
+dispatch it on both vehicles. That way we can bid more since our cost is
+optimized and we make more reward.
 
 \section{Results}
 % in this section, you describe several results from the experiments with your auctioning agent
@@ -26,17 +37,30 @@
 
 \subsubsection{Setting}
 % you describe how you perform the experiment, the environment and description of the agents you compare with
+We use two other agents, each dummy, with 100 tasks in total.
 
 \subsubsection{Observations}
 % you describe the experimental results and the conclusions you inferred from these results
+The more task there is, the best our agent gets. With 20 tasks, we were overall
+better, but there was some stabilisation time, however with 100 tasks, there was
+clearly a better reward per kilometers from the beginning.
 
-\vdots
+Because we have more tasks, that mean that we can win more bids and optimising
+our allocations to each vehicle.
 
-\subsection{Experiment n}
+\subsection{Experiment 2: Comparisons with more dummy}
 % other experiments you would like to present (for example, varying the internal parameter values)
 
 \subsubsection{Setting}
 
+We remove one agent from our company and have the others being dummy. Thus we
+have three company, two with two dummy agents, one with a single auction agent.
+
 \subsubsection{Observations}
+
+We still have a better reward per kilometers than the dummy companies.
+
+This means our bidding strategy allows us to get more than tasks than the dummy
+agents, and we even make more profit than them.
 
 \end{document}
